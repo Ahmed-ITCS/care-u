@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Revenue Report — {{ platform_name }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-primary mb-4">Revenue Report</h1>
+<div class="flex gap-2 mb-6">
+    <a href="?format=pdf" class="btn btn-sm btn-outline">Export PDF</a>
+    <a href="?format=excel" class="btn btn-sm btn-outline">Export Excel</a>
+</div>
+<div class="stats shadow">
+    <div class="stat"><div class="stat-title">Period</div><div class="stat-value text-sm">{{ data.period }}</div></div>
+    <div class="stat"><div class="stat-title">Collected</div><div class="stat-value text-success">PKR {{ data.total_collected|floatformat:0 }}</div></div>
+    <div class="stat"><div class="stat-title">Outstanding</div><div class="stat-value text-error">PKR {{ data.outstanding_amount|floatformat:0 }}</div></div>
+</div>
+{% endblock %}

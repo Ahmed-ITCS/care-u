@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Visit Detail — {{ platform_name }}{% endblock %}
+{% block content %}
+<a href="{% url 'clinical:visits' %}" class="btn btn-ghost btn-sm mb-4">&larr; Back</a>
+<h1 class="text-2xl font-bold text-primary mb-4">{{ visit.patient.full_name }} - {{ visit.get_visit_type_display }}</h1>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow"><div class="card-body">
+        <h3 class="font-bold">Visit Info</h3>
+        <p>Date: {{ visit.visit_date }}</p>
+        <p>Doctor: Dr. {{ visit.doctor.get_full_name|default:"-" }}</p>
+        <p>Status: {{ visit.get_status_display }}</p>
+    </div></div>
+    {% if visit.opd_details %}
+    <div class="card bg-base-100 shadow"><div class="card-body">
+        <h3 class="font-bold">OPD Details</h3>
+        <p><strong>Chief Complaint:</strong> {{ visit.opd_details.chief_complaint }}</p>
+        <p><strong>Diagnosis:</strong> {{ visit.opd_details.diagnosis|default:"-" }}</p>
+    </div></div>
+    {% endif %}
+</div>
+{% endblock %}

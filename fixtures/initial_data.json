@@ -1,0 +1,12 @@
+[
+  {
+    "model": "core.department",
+    "pk": 1,
+    "fields": {
+      "name": "General Medicine",
+      "code": "GM",
+      "description": "",
+      "is_active": true
+    }
+  }
+]

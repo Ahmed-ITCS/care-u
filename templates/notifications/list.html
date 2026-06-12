@@ -1,0 +1,13 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Notifications — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="Notifications" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<div class="divide-y">
+    {% for n in notifications %}
+    <div class="p-4 flex justify-between items-start {% if not n.is_read %}bg-primary/5{% endif %}">
+        <div><p class="font-semibold">{{ n.title }}</p><p class="text-sm opacity-70">{{ n.message }}</p><p class="text-xs opacity-50 mt-1">{{ n.created_at|timesince }} ago</p></div>
+        {% if not n.is_read %}<span class="badge badge-primary badge-sm">New</span>{% endif %}
+    </div>
+    {% empty %}<p class="text-center py-8 opacity-60">No notifications</p>{% endfor %}
+</div>
+{% endblock %}

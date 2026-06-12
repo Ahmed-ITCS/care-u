@@ -1,0 +1,9 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Account Suspended{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-20 text-center">
+    <h1 class="text-3xl font-bold text-error mb-4">Account Suspended or Expired</h1>
+    <p class="mb-6">Please contact platform support to renew your subscription.</p>
+    <a href="{% url 'tenants:landing' %}" class="btn btn-primary">Back to Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}All Hospitals{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold text-primary mb-6">All Hospitals</h1>
+    <div class="flex gap-2 mb-4">
+        <a href="?" class="btn btn-sm {% if not request.GET.status %}btn-primary{% else %}btn-ghost{% endif %}">All</a>
+        <a href="?status=active" class="btn btn-sm {% if request.GET.status == 'active' %}btn-primary{% else %}btn-ghost{% endif %}">Active</a>
+        <a href="?status=trial" class="btn btn-sm {% if request.GET.status == 'trial' %}btn-primary{% else %}btn-ghost{% endif %}">Trial</a>
+        <a href="?status=suspended" class="btn btn-sm {% if request.GET.status == 'suspended' %}btn-primary{% else %}btn-ghost{% endif %}">Suspended</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table table-zebra bg-base-100 shadow">
+            <thead><tr><th>Name</th><th>Subdomain</th><th>Plan</th><th>Status</th><th>Paid until</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+                {% for h in hospitals %}
+                <tr>
+                    <td>{{ h.name }}</td>
+                    <td class="font-mono">{{ h.subdomain }}</td>
+                    <td>{{ h.plan.display_name|default:"—" }}</td>
+                    <td><span class="badge">{{ h.get_status_display }}</span></td>
+                    <td>{{ h.paid_until|date:"M d, Y"|default:"—" }}</td>
+                    <td>{{ h.created_at|date:"M d, Y" }}</td>
+                    <td><a href="{% url 'platform:hospital_detail' h.pk %}" class="btn btn-ghost btn-xs">Manage</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}My Records — {{ platform_name }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-primary mb-6">My Medical Records</h1>
+{% if patient %}
+<div class="card bg-base-100 shadow"><div class="card-body">
+    <p><strong>MR Number:</strong> {{ patient.mr_number }}</p>
+    <p><strong>Name:</strong> {{ patient.full_name }}</p>
+</div></div>
+{% else %}<div class="alert alert-warning">No patient profile linked to your account.</div>{% endif %}
+{% endblock %}

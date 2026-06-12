@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Reports — {{ platform_name }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-primary mb-6">Reports & Analytics</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <a href="{% url 'reports:daily_opd' %}" class="card bg-base-100 shadow-lg hover:shadow-xl transition"><div class="card-body"><h2 class="card-title">Daily OPD Report</h2><p class="text-sm opacity-70">Outpatient visits and appointments</p></div></a>
+    <a href="{% url 'reports:revenue' %}" class="card bg-base-100 shadow-lg hover:shadow-xl transition"><div class="card-body"><h2 class="card-title">Revenue Report</h2><p class="text-sm opacity-70">Collections and outstanding bills</p></div></a>
+    <a href="{% url 'reports:stock' %}" class="card bg-base-100 shadow-lg hover:shadow-xl transition"><div class="card-body"><h2 class="card-title">Stock Report</h2><p class="text-sm opacity-70">Inventory levels and expiry alerts</p></div></a>
+</div>
+{% endblock %}

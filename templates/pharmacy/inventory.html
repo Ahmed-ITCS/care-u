@@ -1,0 +1,20 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Pharmacy Inventory — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="Pharmacy Inventory" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<table class="table table-zebra">
+    <thead><tr><th>Drug</th><th>Brand</th><th>Form</th><th>Stock</th><th>Price</th><th>Reorder</th></tr></thead>
+    <tbody>
+        {% for drug in drugs %}
+        <tr>
+            <td>{{ drug.generic_name }} {{ drug.strength }}</td>
+            <td>{{ drug.brand_name|default:"-" }}</td>
+            <td>{{ drug.form|default:"-" }}</td>
+            <td><span class="badge {% if drug.total_stock <= drug.reorder_level %}badge-error{% else %}badge-success{% endif %}">{{ drug.total_stock }}</span></td>
+            <td>PKR {{ drug.unit_price }}</td>
+            <td>{{ drug.reorder_level }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center py-8">No drugs</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "partials/list_page.html" %}
+{% block title %}My Appointments — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="My Appointments" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<table class="table table-zebra">
+    <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Status</th></tr></thead>
+    <tbody>
+        {% for appt in appointments %}
+        <tr><td>{{ appt.scheduled_date }}</td><td>{{ appt.scheduled_time }}</td><td>Dr. {{ appt.doctor.get_full_name }}</td><td>{{ appt.get_status_display }}</td></tr>
+        {% empty %}<tr><td colspan="4" class="text-center py-8">No appointments</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

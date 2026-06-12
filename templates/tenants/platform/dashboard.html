@@ -1,0 +1,70 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Platform Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div class="page-header mb-0">
+            <h1>Platform Dashboard</h1>
+            <p>Manage all registered hospitals</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'platform:hospitals' %}" class="btn btn-premium btn-sm">All Hospitals</a>
+            <a href="{% url 'platform:logout' %}" class="btn btn-ghost btn-sm">Logout</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="stat-card text-primary">
+            <p class="text-sm text-base-content/50 font-medium">Total Hospitals</p>
+            <p class="text-3xl font-bold mt-1">{{ summary.total }}</p>
+        </div>
+        <div class="stat-card text-success">
+            <p class="text-sm text-base-content/50 font-medium">Active</p>
+            <p class="text-3xl font-bold mt-1">{{ summary.active }}</p>
+        </div>
+        <div class="stat-card text-warning">
+            <p class="text-sm text-base-content/50 font-medium">Trial</p>
+            <p class="text-3xl font-bold mt-1">{{ summary.trial }}</p>
+        </div>
+        <div class="stat-card text-error">
+            <p class="text-sm text-base-content/50 font-medium">Suspended</p>
+            <p class="text-3xl font-bold mt-1">{{ summary.suspended }}</p>
+        </div>
+    </div>
+
+    <div class="premium-card overflow-x-auto">
+        <table class="table premium-table">
+            <thead>
+                <tr>
+                    <th>Hospital</th>
+                    <th>Subdomain</th>
+                    <th>Status</th>
+                    <th>Patients</th>
+                    <th>Staff</th>
+                    <th>Plan</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in hospital_stats %}
+                <tr>
+                    <td class="font-medium">{{ item.hospital.name }}</td>
+                    <td class="font-mono text-sm text-base-content/60">{{ item.hospital.subdomain }}</td>
+                    <td>
+                        <span class="badge badge-sm {% if item.hospital.status == 'active' %}badge-success{% elif item.hospital.status == 'trial' %}badge-warning{% elif item.hospital.status == 'suspended' %}badge-error{% else %}badge-ghost{% endif %}">
+                            {{ item.hospital.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ item.stats.patients }}</td>
+                    <td>{{ item.stats.staff }}</td>
+                    <td>{{ item.hospital.plan.display_name|default:"—" }}</td>
+                    <td><a href="{% url 'platform:hospital_detail' item.hospital.pk %}" class="btn btn-ghost btn-xs text-primary">Manage →</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-16 text-base-content/40">No hospitals registered yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

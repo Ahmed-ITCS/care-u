@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Onboarding — {{ tenant.name }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-primary mb-2">Welcome to {{ tenant.name }}!</h1>
+    <p class="text-base-content/70 mb-8">Complete setup in 3 quick steps.</p>
+    <ul class="steps steps-horizontal w-full mb-8">
+        <li class="step {% if step >= 1 %}step-primary{% endif %}">Departments</li>
+        <li class="step {% if step >= 2 %}step-primary{% endif %}">Branding</li>
+        <li class="step {% if step >= 3 %}step-primary{% endif %}">Finish</li>
+    </ul>
+    <div class="card bg-base-100 shadow-xl"><div class="card-body">
+        {% if step == 1 %}
+        <form method="post">
+            {% csrf_token %}
+            <label class="label">Departments (comma-separated)</label>
+            <input type="text" name="departments" class="input input-bordered w-full mb-4"
+                   value="General Medicine, Surgery, Pediatrics, Radiology, Pathology">
+            <button type="submit" class="btn btn-primary">Next</button>
+        </form>
+        {% elif step == 2 %}
+        <form method="post">
+            {% csrf_token %}
+            <label class="label">Primary Color</label>
+            <input type="color" name="primary_color" value="{{ tenant.primary_color }}" class="mb-4">
+            <label class="label">Accent Color</label>
+            <input type="color" name="accent_color" value="{{ tenant.accent_color }}" class="mb-4">
+            <button type="submit" class="btn btn-primary">Next</button>
+        </form>
+        {% elif step == 3 %}
+        <form method="post">
+            {% csrf_token %}
+            <p class="mb-4">We'll seed your test catalog, drug inventory, and service pricing.</p>
+            <button type="submit" class="btn btn-accent">Complete Setup</button>
+        </form>
+        {% endif %}
+    </div></div>
+</div>
+{% endblock %}

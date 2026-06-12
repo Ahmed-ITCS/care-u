@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}OTP Login — {{ platform_name }}{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-neutral p-4">
+    <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+        <div class="card-body">
+            <h2 class="card-title text-primary">OTP Login</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text">Username</span></label>
+                    <input type="text" name="username" class="input input-bordered w-full" required>
+                </div>
+                <div class="form-control mb-4">
+                    <label class="label"><span class="label-text">Channel</span></label>
+                    <select name="channel" class="select select-bordered w-full">
+                        <option value="email">Email</option>
+                        <option value="sms">SMS</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-full">Send OTP</button>
+            </form>
+            <a href="{% url 'users:login' %}" class="link link-hover text-center mt-4 text-sm">Back to login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

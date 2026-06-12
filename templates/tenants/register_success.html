@@ -1,0 +1,18 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Registration Successful{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-16 max-w-lg text-center">
+    <div class="text-6xl mb-4">✓</div>
+    <h1 class="text-3xl font-bold text-primary mb-4">Welcome, {{ hospital.name }}!</h1>
+    <p class="mb-6">Your {{ platform_name }} workspace is ready. Complete onboarding to get started.</p>
+    <div class="card bg-base-100 shadow-lg text-left mb-6"><div class="card-body">
+        <p><strong>Subdomain:</strong> {{ hospital.subdomain }}</p>
+        <p><strong>Status:</strong> {{ hospital.get_status_display }}</p>
+        <p><strong>Trial ends:</strong> {{ hospital.trial_ends }}</p>
+    </div></div>
+    <div class="flex flex-col gap-3">
+        <a href="{{ onboarding_url }}" class="btn btn-primary">Complete Onboarding</a>
+        <a href="{{ login_url }}" class="btn btn-outline">Go to Login</a>
+    </div>
+</div>
+{% endblock %}

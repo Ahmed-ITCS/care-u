@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Doctor Calendar — {{ platform_name }}{% endblock %}
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-primary mb-6">Appointment Calendar</h1>
+<div id="calendar" class="card bg-base-100 shadow-lg p-4"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const res = await fetch('/api/v1/appointments/today/', { credentials: 'same-origin' });
+    const events = (await res.json()).map(a => ({
+        title: a.patient_name, start: `${a.scheduled_date}T${a.scheduled_time}`,
+        color: '#1E40AF'
+    }));
+    new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        events, height: 'auto'
+    }).render();
+});
+</script>
+{% endblock %}

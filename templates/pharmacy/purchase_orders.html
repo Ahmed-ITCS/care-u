@@ -1,0 +1,13 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Purchase Orders — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="Purchase Orders" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<table class="table table-zebra">
+    <thead><tr><th>PO #</th><th>Supplier</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>
+    <tbody>
+        {% for order in orders %}
+        <tr><td class="font-mono">{{ order.po_number }}</td><td>{{ order.supplier.name }}</td><td>{{ order.get_status_display }}</td><td>PKR {{ order.total_amount }}</td><td>{{ order.order_date }}</td></tr>
+        {% empty %}<tr><td colspan="5" class="text-center py-8">No orders</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

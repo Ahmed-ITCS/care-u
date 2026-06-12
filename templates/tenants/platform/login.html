@@ -1,0 +1,29 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Platform Admin Login{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-mesh">
+    <div class="auth-card w-full max-w-md">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
+                <svg class="w-5 h-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Platform Admin</h2>
+                <p class="text-sm text-base-content/50">Super admin access only</p>
+            </div>
+        </div>
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Username</span></label>
+                <input type="text" name="username" class="input-premium" placeholder="superadmin" required autofocus>
+            </div>
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Password</span></label>
+                <input type="password" name="password" class="input-premium" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-premium w-full">Sign In to Platform</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

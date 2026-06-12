@@ -1,0 +1,20 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Invoices — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="Invoices" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<table class="table table-zebra">
+    <thead><tr><th>Invoice #</th><th>Patient</th><th>Total</th><th>Paid</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        {% for inv in invoices %}
+        <tr>
+            <td class="font-mono">{{ inv.invoice_number }}</td>
+            <td>{{ inv.patient.full_name }}</td>
+            <td>PKR {{ inv.total_amount }}</td>
+            <td>PKR {{ inv.amount_paid }}</td>
+            <td><span class="badge badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+            <td><a href="{% url 'billing:invoice_detail' inv.pk %}" class="btn btn-ghost btn-xs">View</a></td>
+        </tr>
+        {% empty %}<tr><td colspan="6" class="text-center py-8">No invoices</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

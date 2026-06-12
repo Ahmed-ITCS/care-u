@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* ── App shell ── */
+  .app-sidebar {
+    @apply bg-neutral text-neutral-content min-h-full w-72 flex flex-col border-r border-white/5;
+    background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+  }
+
+  .sidebar-brand {
+    @apply px-5 py-6 border-b border-white/10;
+  }
+
+  .sidebar-nav-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-neutral-content/70
+           transition-all duration-200 hover:bg-white/10 hover:text-white;
+  }
+
+  .sidebar-nav-link.active {
+    @apply bg-primary text-primary-content shadow-lg shadow-primary/25;
+  }
+
+  .sidebar-nav-link.active svg {
+    @apply text-primary-content;
+  }
+
+  .app-topbar {
+    @apply sticky top-0 z-30 bg-base-100/80 backdrop-blur-xl border-b border-base-300/60 px-4 md:px-6;
+  }
+
+  .app-main {
+    @apply flex-1 p-4 md:p-8 max-w-[1600px] mx-auto w-full animate-fade-in;
+  }
+
+  /* ── Cards & stats ── */
+  .premium-card {
+    @apply bg-base-100 rounded-2xl border border-base-300/50 shadow-premium overflow-hidden;
+  }
+
+  .stat-card {
+    @apply premium-card p-5 relative overflow-hidden transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-0.5;
+  }
+
+  .stat-card::before {
+    content: '';
+    @apply absolute top-0 right-0 w-24 h-24 rounded-full opacity-10 -translate-y-1/2 translate-x-1/2;
+    background: currentColor;
+  }
+
+  .stat-icon {
+    @apply w-11 h-11 rounded-xl flex items-center justify-center mb-3;
+  }
+
+  /* ── Page headers ── */
+  .page-header {
+    @apply mb-8;
+  }
+
+  .page-header h1 {
+    @apply text-2xl md:text-3xl font-bold text-base-content tracking-tight;
+  }
+
+  .page-header p {
+    @apply text-base-content/60 mt-1 text-sm md:text-base;
+  }
+
+  /* ── Public / marketing ── */
+  .public-navbar {
+    @apply sticky top-0 z-50 bg-base-100/90 backdrop-blur-xl border-b border-base-300/40 px-4 md:px-8;
+  }
+
+  .hero-gradient {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 45%, #0F766E 100%);
+  }
+
+  .hero-mesh {
+    @apply relative overflow-hidden;
+  }
+
+  .hero-mesh::before {
+    content: '';
+    @apply absolute inset-0 bg-mesh opacity-60 pointer-events-none;
+  }
+
+  .feature-card {
+    @apply premium-card p-6 transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1;
+  }
+
+  .feature-card:hover .feature-icon {
+    @apply bg-primary text-primary-content;
+  }
+
+  .feature-icon {
+    @apply w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 transition-colors duration-300;
+  }
+
+  .pricing-card {
+    @apply premium-card p-8 text-center transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1;
+  }
+
+  .pricing-card.featured {
+    @apply border-2 border-primary ring-4 ring-primary/10 scale-[1.02];
+  }
+
+  /* ── Auth ── */
+  .auth-panel {
+    @apply hidden lg:flex lg:w-1/2 hero-gradient text-white flex-col justify-between p-12 relative overflow-hidden;
+  }
+
+  .auth-panel::after {
+    content: '';
+    @apply absolute inset-0 bg-mesh-dark opacity-40 pointer-events-none;
+  }
+
+  .auth-card {
+    @apply w-full max-w-md bg-base-100 rounded-2xl shadow-premium-lg border border-base-300/50 p-8;
+  }
+
+  /* ── Tables ── */
+  .premium-table thead {
+    @apply bg-base-200/80 text-xs uppercase tracking-wider text-base-content/60;
+  }
+
+  .premium-table tbody tr {
+    @apply border-b border-base-300/40 hover:bg-base-200/40 transition-colors;
+  }
+
+  /* ── Forms ── */
+  .input-premium {
+    @apply input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
+  }
+
+  .btn-premium {
+    @apply btn btn-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all;
+  }
+
+  /* ── Badges ── */
+  .badge-status-active { @apply badge badge-success badge-sm; }
+  .badge-status-trial { @apply badge badge-warning badge-sm; }
+  .badge-status-suspended { @apply badge badge-error badge-sm; }
+  .badge-status-pending { @apply badge badge-ghost badge-sm; }
+}
+
+@media print {
+  .print\:hidden { display: none !important; }
+  body { background: white !important; }
+  .card, .premium-card { box-shadow: none !important; border: 1px solid #e5e7eb; }
+}

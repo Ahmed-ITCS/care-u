@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Wards — {{ platform_name }}{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-primary mb-6">Ward & Bed Management</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for ward in wards %}
+    <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+            <h2 class="card-title">{{ ward.name }}</h2>
+            <p class="text-sm opacity-70">{{ ward.get_ward_type_display }} - Floor {{ ward.floor }}</p>
+            <div class="flex gap-4 mt-2">
+                <div class="stat p-0"><div class="stat-title text-xs">Occupied</div><div class="stat-value text-lg text-error">{{ ward.occupied_beds }}</div></div>
+                <div class="stat p-0"><div class="stat-title text-xs">Vacant</div><div class="stat-value text-lg text-success">{{ ward.vacant_beds }}</div></div>
+            </div>
+            <div class="flex flex-wrap gap-1 mt-4">
+                {% for bed in ward.beds.all %}
+                <div class="badge badge-lg {% if bed.status == 'occupied' %}badge-error{% elif bed.status == 'vacant' %}badge-success{% else %}badge-warning{% endif %}">{{ bed.bed_number }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}<p class="opacity-60">No wards configured</p>{% endfor %}
+</div>
+{% endblock %}

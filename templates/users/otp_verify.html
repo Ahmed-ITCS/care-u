@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Verify OTP — {{ platform_name }}{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-neutral p-4">
+    <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+        <div class="card-body">
+            <h2 class="card-title text-primary">Enter OTP</h2>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-control mb-6">
+                    {{ form.code }}
+                </div>
+                <button type="submit" class="btn btn-primary w-full">Verify</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

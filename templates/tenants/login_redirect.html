@@ -1,0 +1,19 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Hospital Login{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center px-4">
+    <div class="card w-full max-w-md bg-base-100 shadow-2xl"><div class="card-body">
+        <h2 class="card-title text-primary">Access Your Hospital</h2>
+        <p class="text-sm opacity-70 mb-4">Enter your hospital subdomain to continue.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="join w-full mb-4">
+                <input type="text" name="subdomain" class="input input-bordered join-item flex-1" placeholder="gph-islamabad" required>
+                <span class="btn btn-disabled join-item">/h/</span>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">Continue to Login</button>
+        </form>
+        <a href="{% url 'tenants:register' %}" class="link link-hover text-center mt-4 text-sm">Register a new hospital</a>
+    </div></div>
+</div>
+{% endblock %}
