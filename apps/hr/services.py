@@ -57,3 +57,19 @@ def process_payroll(payroll_run, user):
     payroll_run.processed_at = timezone.now()
     payroll_run.save()
     return payroll_run
+
+
+def approve_leave(leave, user, notes=''):
+    leave.status = 'approved'
+    leave.approved_by = user
+    leave.approval_notes = notes
+    leave.save(update_fields=['status', 'approved_by', 'approval_notes', 'updated_at'])
+    return leave
+
+
+def reject_leave(leave, user, notes=''):
+    leave.status = 'rejected'
+    leave.approved_by = user
+    leave.approval_notes = notes
+    leave.save(update_fields=['status', 'approved_by', 'approval_notes', 'updated_at'])
+    return leave

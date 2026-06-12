@@ -1,5 +1,5 @@
 from django.contrib.auth import (
-    SESSION_KEY, BACKEND_SESSION_KEY, HASH_SESSION_KEY,
+    SESSION_KEY, BACKEND_SESSION_KEY, HASH_SESSION_KEY, logout,
 )
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -88,9 +88,17 @@ def unified_login(request):
     return render(request, 'tenants/unified_login.html')
 
 
+def public_logout(request):
+    """Sign out hospital user and clear tenant session — public /logout/ URL."""
+    logout(request)
+    request.session.flush()
+    messages.success(request, 'You have been signed out.')
+    return redirect(settings.LOGIN_URL)
+
+
 def tenant_login_redirect(request):
     """Legacy URL — redirect to unified login."""
-    return redirect('tenants:login')
+    return redirect(settings.LOGIN_URL)
 
 
 def suspended(request):

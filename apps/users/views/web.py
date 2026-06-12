@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
@@ -17,12 +18,13 @@ class GPHLoginView(LoginView):
 
     def get(self, request, *args, **kwargs):
         # All hospitals use the single public login — no per-tenant login page
-        return redirect('tenants:login')
+        return redirect(settings.LOGIN_URL)
 
 
 def logout_view(request):
-    logout(request)
-    return redirect('tenants:login')
+    """Tenant-prefixed logout — delegates to public sign-out logic."""
+    from apps.tenants.views.public import public_logout
+    return public_logout(request)
 
 
 def otp_request_view(request):
@@ -104,7 +106,7 @@ def password_reset_confirm(request):
                 user.save()
                 del request.session['reset_email']
                 messages.success(request, 'Password reset successful')
-                return redirect('users:login')
+                return redirect(settings.LOGIN_URL)
             messages.error(request, 'Invalid or expired code')
         except User.DoesNotExist:
             messages.error(request, 'User not found')

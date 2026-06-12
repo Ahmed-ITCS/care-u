@@ -1,13 +1,32 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Payroll — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Payroll" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block content %}
+{% include "hr/_nav.html" with active="payroll" is_admin=True %}
+{% with page_title="Payroll" page_subtitle="Monthly salary runs" add_url="hr:payroll_create" add_label="New Payroll Run" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
 {% block table_content %}
-<table class="table table-zebra">
-    <thead><tr><th>Period</th><th>Status</th><th>Total</th><th>Processed</th></tr></thead>
+<table class="table premium-table">
+    <thead>
+        <tr><th>Period</th><th>Status</th><th>Total</th><th>Processed</th><th></th></tr>
+    </thead>
     <tbody>
         {% for p in payrolls %}
-        <tr><td>{{ p.month }}/{{ p.year }}</td><td>{{ p.get_status_display }}</td><td>PKR {{ p.total_amount }}</td><td>{{ p.processed_at|date:"M d, Y"|default:"-" }}</td></tr>
-        {% empty %}<tr><td colspan="4" class="text-center py-8">No payroll runs</td></tr>{% endfor %}
+        <tr>
+            <td class="font-medium">{{ p.month }}/{{ p.year }}</td>
+            <td>
+                <span class="badge badge-sm {% if p.status == 'paid' %}badge-success{% elif p.status == 'processed' %}badge-info{% else %}badge-ghost{% endif %}">
+                    {{ p.get_status_display }}
+                </span>
+            </td>
+            <td>PKR {{ p.total_amount|floatformat:0 }}</td>
+            <td>{{ p.processed_at|date:"M d, Y"|default:"—" }}</td>
+            <td><a href="{% url 'hr:payroll_detail' p.pk %}" class="btn btn-ghost btn-xs text-primary">View →</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-12 text-base-content/40">No payroll runs yet. Create one to get started.</td></tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

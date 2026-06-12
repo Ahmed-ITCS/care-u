@@ -1,13 +1,37 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Attendance — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Staff Attendance" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block content %}
+{% include "hr/_nav.html" with active="attendance" is_admin=True %}
+{% with page_title="Staff Attendance" page_subtitle="Record and review daily attendance" add_url="hr:attendance_create" add_label="Record Attendance" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
 {% block table_content %}
-<table class="table table-zebra">
-    <thead><tr><th>Staff</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th></tr></thead>
+<form method="get" class="mb-4 flex gap-2 items-end">
+    <div class="form-control">
+        <label class="label py-0"><span class="label-text text-xs">Filter by date</span></label>
+        <input type="date" name="date" value="{{ date_filter|default:'' }}" class="input input-bordered input-sm">
+    </div>
+    <button type="submit" class="btn btn-sm btn-outline">Filter</button>
+    {% if date_filter %}<a href="{% url 'hr:attendance' %}" class="btn btn-sm btn-ghost">Clear</a>{% endif %}
+</form>
+<table class="table premium-table">
+    <thead>
+        <tr><th>Staff</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th><th></th></tr>
+    </thead>
     <tbody>
         {% for r in records %}
-        <tr><td>{{ r.staff.get_full_name }}</td><td>{{ r.date }}</td><td>{{ r.check_in|default:"-" }}</td><td>{{ r.check_out|default:"-" }}</td><td>{{ r.get_status_display }}</td></tr>
-        {% empty %}<tr><td colspan="5" class="text-center py-8">No records</td></tr>{% endfor %}
+        <tr>
+            <td class="font-medium">{{ r.staff.get_full_name|default:r.staff.username }}</td>
+            <td>{{ r.date }}</td>
+            <td>{{ r.check_in|default:"—" }}</td>
+            <td>{{ r.check_out|default:"—" }}</td>
+            <td><span class="badge badge-sm">{{ r.get_status_display }}</span></td>
+            <td><a href="{% url 'hr:attendance_edit' r.pk %}" class="btn btn-ghost btn-xs">Edit</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-12 text-base-content/40">No attendance records yet.</td></tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

@@ -1,13 +1,53 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Leave Requests — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Leave Requests" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block content %}
+{% include "hr/_nav.html" with active="leaves" is_admin=is_admin %}
+{% with page_title="Leave Requests" page_subtitle="Submit and manage time off" add_url="hr:leave_create" add_label="Request Leave" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
 {% block table_content %}
-<table class="table table-zebra">
-    <thead><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Status</th></tr></thead>
+<div class="flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'hr:leaves' %}" class="btn btn-xs {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %}">All</a>
+    <a href="?status=pending" class="btn btn-xs {% if status_filter == 'pending' %}btn-primary{% else %}btn-ghost{% endif %}">Pending</a>
+    <a href="?status=approved" class="btn btn-xs {% if status_filter == 'approved' %}btn-primary{% else %}btn-ghost{% endif %}">Approved</a>
+    <a href="?status=rejected" class="btn btn-xs {% if status_filter == 'rejected' %}btn-primary{% else %}btn-ghost{% endif %}">Rejected</a>
+</div>
+<table class="table premium-table">
+    <thead>
+        <tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Status</th><th>Notes</th>{% if is_admin %}<th></th>{% endif %}</tr>
+    </thead>
     <tbody>
         {% for l in leaves %}
-        <tr><td>{{ l.staff.get_full_name }}</td><td>{{ l.get_leave_type_display }}</td><td>{{ l.start_date }}</td><td>{{ l.end_date }}</td><td><span class="badge">{{ l.get_status_display }}</span></td></tr>
-        {% empty %}<tr><td colspan="5" class="text-center py-8">No leave requests</td></tr>{% endfor %}
+        <tr>
+            <td class="font-medium">{{ l.staff.get_full_name|default:l.staff.username }}</td>
+            <td>{{ l.get_leave_type_display }}</td>
+            <td>{{ l.start_date }}</td>
+            <td>{{ l.end_date }}</td>
+            <td>
+                <span class="badge badge-sm {% if l.status == 'approved' %}badge-success{% elif l.status == 'rejected' %}badge-error{% elif l.status == 'pending' %}badge-warning{% else %}badge-ghost{% endif %}">
+                    {{ l.get_status_display }}
+                </span>
+            </td>
+            <td class="text-sm text-base-content/60 max-w-xs truncate">{{ l.reason }}</td>
+            {% if is_admin %}
+            <td>
+                {% if l.status == 'pending' %}
+                <div class="flex gap-1">
+                    <form method="post" action="{% url 'hr:leave_approve' l.pk %}" class="inline">{% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-xs">Approve</button>
+                    </form>
+                    <form method="post" action="{% url 'hr:leave_reject' l.pk %}" class="inline">{% csrf_token %}
+                        <button type="submit" class="btn btn-error btn-outline btn-xs">Reject</button>
+                    </form>
+                </div>
+                {% else %}—{% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if is_admin %}7{% else %}6{% endif %}" class="text-center py-12 text-base-content/40">No leave requests.</td></tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

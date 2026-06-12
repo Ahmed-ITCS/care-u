@@ -1,0 +1,7 @@
+<div class="flex flex-wrap gap-2 mb-6">
+    {% if is_admin %}
+    <a href="{% url 'hr:attendance' %}" class="btn btn-sm {% if active == 'attendance' %}btn-primary{% else %}btn-ghost{% endif %}">Attendance</a>
+    <a href="{% url 'hr:payroll' %}" class="btn btn-sm {% if active == 'payroll' %}btn-primary{% else %}btn-ghost{% endif %}">Payroll</a>
+    {% endif %}
+    <a href="{% url 'hr:leaves' %}" class="btn btn-sm {% if active == 'leaves' %}btn-primary{% else %}btn-ghost{% endif %}">Leave Requests</a>
+</div>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Payroll {{ payroll.month }}/{{ payroll.year }} — {{ platform_name }}{% endblock %}
+{% block content %}
+<a href="{% url 'hr:payroll' %}" class="btn btn-ghost btn-sm mb-4">&larr; Back to payroll</a>
+<div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+    <div class="page-header mb-0">
+        <h1>Payroll — {{ payroll.month }}/{{ payroll.year }}</h1>
+        <p>Status: {{ payroll.get_status_display }} · Total: PKR {{ payroll.total_amount|floatformat:0 }}</p>
+    </div>
+    {% if payroll.status == 'draft' %}
+    <form method="post" action="{% url 'hr:payroll_process' payroll.pk %}">{% csrf_token %}
+        <button type="submit" class="btn btn-premium" onclick="return confirm('Process payroll for all staff?')">Process Payroll</button>
+    </form>
+    {% endif %}
+</div>
+<div class="premium-card overflow-x-auto">
+    <table class="table premium-table">
+        <thead>
+            <tr><th>Staff</th><th>Basic</th><th>Allowances</th><th>Commission</th><th>Deductions</th><th>Net</th></tr>
+        </thead>
+        <tbody>
+            {% for item in payroll.items.all %}
+            <tr>
+                <td class="font-medium">{{ item.staff.get_full_name|default:item.staff.username }}</td>
+                <td>{{ item.basic_salary|floatformat:0 }}</td>
+                <td>{{ item.allowances|floatformat:0 }}</td>
+                <td>{{ item.commission|floatformat:0 }}</td>
+                <td>{{ item.deductions|floatformat:0 }}</td>
+                <td class="font-semibold">PKR {{ item.net_salary|floatformat:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-12 text-base-content/40">
+                {% if payroll.status == 'draft' %}Click <strong>Process Payroll</strong> to calculate salaries.{% else %}No items.{% endif %}
+            </td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

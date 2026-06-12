@@ -14,7 +14,9 @@ from apps.clinical.views.api import (
 from apps.laboratory.views.api import TestCatalogViewSet, LabTestRequestViewSet
 from apps.pharmacy.views.api import DrugViewSet, DispenseViewSet, PurchaseOrderViewSet, SupplierViewSet
 from apps.billing.views.api import InvoiceViewSet, PaymentViewSet, ServiceCatalogViewSet
-from apps.hr.views.api import AttendanceViewSet, LeaveRequestViewSet, PayrollRunViewSet
+from apps.hr.views.api import (
+    AttendanceViewSet, LeaveRequestViewSet, PayrollRunViewSet, ShiftViewSet,
+)
 from apps.notifications.views.api import NotificationViewSet
 from apps.core.views.api import DepartmentViewSet, DashboardViewSet
 
@@ -48,6 +50,7 @@ router.register('suppliers', SupplierViewSet, basename='suppliers')
 router.register('services', ServiceCatalogViewSet, basename='services')
 router.register('invoices', InvoiceViewSet, basename='invoices')
 router.register('payments', PaymentViewSet, basename='payments')
+router.register('shifts', ShiftViewSet, basename='shifts')
 router.register('attendance', AttendanceViewSet, basename='attendance')
 router.register('leave-requests', LeaveRequestViewSet, basename='leave-requests')
 router.register('payroll', PayrollRunViewSet, basename='payroll')

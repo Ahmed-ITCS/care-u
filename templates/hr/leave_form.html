@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Request Leave — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <a href="{% url 'hr:leaves' %}" class="btn btn-ghost btn-sm mb-4">&larr; Back</a>
+    <div class="page-header mb-6"><h1>Request Leave</h1><p>Submit a leave request for admin approval</p></div>
+    <div class="premium-card p-6">
+        <form method="post" class="space-y-4">{% csrf_token %}
+            {% for field in form %}
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">{{ field.label }}</span></label>
+                {{ field }}
+                {% if field.errors %}<p class="text-error text-sm mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-premium w-full">Submit Request</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

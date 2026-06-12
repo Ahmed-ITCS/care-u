@@ -1,12 +1,12 @@
-from rest_framework import serializers, viewsets, status
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from apps.core.permissions import IsAdmin, RolePermission
+from apps.core.permissions import IsAdmin
 from apps.users.models import Role
 from apps.hr.models import Attendance, LeaveRequest, PayrollRun, PayrollItem, Shift
-from apps.hr.services import process_payroll
+from apps.hr.services import process_payroll, approve_leave, reject_leave
 
 
 class ShiftSerializer(serializers.ModelSerializer):
@@ -25,10 +25,18 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
 class LeaveRequestSerializer(serializers.ModelSerializer):
     staff_name = serializers.CharField(source='staff.get_full_name', read_only=True)
+    approved_by_name = serializers.CharField(source='approved_by.get_full_name', read_only=True)
 
     class Meta:
         model = LeaveRequest
         fields = '__all__'
+        read_only_fields = ['status', 'approved_by', 'approval_notes']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request and getattr(request.user, 'role', None) != Role.ADMIN:
+            self.fields['staff'].read_only = True
 
 
 class PayrollItemSerializer(serializers.ModelSerializer):
@@ -45,6 +53,13 @@ class PayrollRunSerializer(serializers.ModelSerializer):
     class Meta:
         model = PayrollRun
         fields = '__all__'
+        read_only_fields = ['status', 'total_amount', 'processed_by', 'processed_at']
+
+
+class ShiftViewSet(viewsets.ModelViewSet):
+    queryset = Shift.objects.filter(is_active=True)
+    serializer_class = ShiftSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -55,34 +70,37 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 
 class LeaveRequestViewSet(viewsets.ModelViewSet):
-    queryset = LeaveRequest.objects.select_related('staff')
+    queryset = LeaveRequest.objects.select_related('staff', 'approved_by')
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ['status', 'leave_type', 'staff']
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.role not in (Role.ADMIN,):
+        if self.request.user.role != Role.ADMIN:
             return qs.filter(staff=self.request.user)
         return qs
+
+    def perform_create(self, serializer):
+        serializer.save(staff=self.request.user, status='pending')
+
+    def perform_update(self, serializer):
+        if self.request.user.role != Role.ADMIN:
+            serializer.save(staff=self.request.user)
+        else:
+            serializer.save()
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
     def approve(self, request, pk=None):
         leave = self.get_object()
-        leave.status = 'approved'
-        leave.approved_by = request.user
-        leave.approval_notes = request.data.get('notes', '')
-        leave.save()
-        return Response(LeaveRequestSerializer(leave).data)
+        approve_leave(leave, request.user, request.data.get('notes', ''))
+        return Response(LeaveRequestSerializer(leave, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsAdmin])
     def reject(self, request, pk=None):
         leave = self.get_object()
-        leave.status = 'rejected'
-        leave.approved_by = request.user
-        leave.approval_notes = request.data.get('notes', '')
-        leave.save()
-        return Response(LeaveRequestSerializer(leave).data)
+        reject_leave(leave, request.user, request.data.get('notes', ''))
+        return Response(LeaveRequestSerializer(leave, context={'request': request}).data)
 
 
 class PayrollRunViewSet(viewsets.ModelViewSet):
@@ -93,5 +111,8 @@ class PayrollRunViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def process(self, request, pk=None):
         payroll = self.get_object()
+        if payroll.status != 'draft':
+            return Response({'detail': 'Payroll already processed.'}, status=400)
         process_payroll(payroll, request.user)
+        payroll.refresh_from_db()
         return Response(PayrollRunSerializer(payroll).data)
