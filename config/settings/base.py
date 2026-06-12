@@ -143,17 +143,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-# PostgreSQL required for schema-based multi-tenancy
-DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': env('DB_NAME', default='gph_erp'),
-        'USER': env('DB_USER', default='gph'),
-        'PASSWORD': env('DB_PASSWORD', default='gph_secret'),
-        'HOST': env('DB_HOST', default='localhost'),
-        'PORT': env('DB_PORT', default='5432'),
+# PostgreSQL required for schema-based multi-tenancy.
+# Prefer DATABASE_URL (set automatically on Render when Postgres is linked).
+_database_url = env('DATABASE_URL', default='')
+if _database_url:
+    DATABASES = {
+        'default': env.db('DATABASE_URL'),
     }
-}
+    DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
+    DATABASES['default'].setdefault('CONN_MAX_AGE', env.int('DB_CONN_MAX_AGE', default=600))
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_tenants.postgresql_backend',
+            'NAME': env('DB_NAME', default='gph_erp'),
+            'USER': env('DB_USER', default='gph'),
+            'PASSWORD': env('DB_PASSWORD', default='gph_secret'),
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+        }
+    }
 
 DATABASE_ROUTERS = ('django_tenants.routers.TenantSyncRouter',)
 

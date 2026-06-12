@@ -1,0 +1,31 @@
+# Render Blueprint — link the web service to the Postgres database so DATABASE_URL is injected.
+services:
+  - type: web
+    name: care-u
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    releaseCommand: python manage.py migrate_schemas --shared && python manage.py migrate_schemas --tenant
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: care-u-9c6b.onrender.com,.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: care-u-db
+          property: connectionString
+      - key: BASE_DOMAIN
+        value: onrender.com
+      - key: TENANT_USE_SUBFOLDER
+        value: "true"
+
+databases:
+  - name: care-u-db
+    plan: free
+    databaseName: gph_erp
+    user: gph

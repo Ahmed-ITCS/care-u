@@ -1,6 +1,24 @@
+import os
+
 from .base import *  # noqa: F401,F403
 
 DEBUG = False
+
+# Render Postgres (and most managed providers) require SSL on external URLs.
+_db_url = os.environ.get('DATABASE_URL', '')
+if _db_url and env.bool('DB_SSLMODE_REQUIRE', default='sslmode=' not in _db_url):  # noqa: F405
+    DATABASES['default'].setdefault('OPTIONS', {})  # noqa: F405
+    DATABASES['default']['OPTIONS'].setdefault('sslmode', 'require')  # noqa: F405
+
+# Fall back to DB sessions when no Redis is configured (common on first Render deploy).
+_redis_url = os.environ.get('REDIS_URL', '')
+if not _redis_url or _redis_url in ('redis://localhost:6379/0', 'redis://127.0.0.1:6379/0'):
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)  # noqa: F405
 SESSION_COOKIE_SECURE = True
