@@ -15,6 +15,9 @@ def tenant_context(request):
     }
 
     if not is_public and tenant:
+        prefix = settings.TENANT_SUBFOLDER_PREFIX.strip('/')
+        subdomain = tenant.subdomain
+        tenant_base = f'/{prefix}/{subdomain}/'
         ctx.update({
             'hospital_name': tenant.name,
             'hospital_address': tenant.address,
@@ -22,7 +25,9 @@ def tenant_context(request):
             'hospital_logo': tenant.logo,
             'hospital_primary_color': tenant.primary_color,
             'hospital_accent_color': tenant.accent_color,
-            'tenant_subdomain': tenant.subdomain,
+            'tenant_subdomain': subdomain,
+            'tenant_base': tenant_base,
+            'tenant_api_base': f'{tenant_base}api/v1/',
         })
 
     return ctx

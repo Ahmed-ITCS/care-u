@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -17,6 +19,9 @@ def dashboard(request):
         'kpis': kpis,
         'role': request.user.role,
     }
+    if request.user.role in ('admin', 'accountant'):
+        context['revenue_chart_json'] = json.dumps(get_revenue_chart_data())
+        context['appointment_chart_json'] = json.dumps(get_appointment_status_chart())
     return render(request, 'core/dashboard.html', context)
 
 

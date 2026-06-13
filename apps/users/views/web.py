@@ -7,7 +7,7 @@ from django.contrib import messages
 
 from apps.core.permissions import IsAdmin
 from apps.tenants.limits import check_staff_limit, SubscriptionLimitExceeded
-from apps.users.forms import LoginForm, OTPVerifyForm, PasswordResetRequestForm, StaffCreateForm
+from apps.users.forms import LoginForm, OTPVerifyForm, PasswordResetRequestForm, StaffCreateForm, StaffEditForm
 from apps.users.models import User, OTPVerification
 from apps.users.tasks import send_otp_email, send_otp_sms
 
@@ -142,3 +142,34 @@ def staff_create(request):
     else:
         form = StaffCreateForm()
     return render(request, 'users/staff_form.html', {'form': form})
+
+
+@login_required
+def staff_edit(request, pk):
+    if request.user.role != 'admin':
+        messages.error(request, 'Access denied')
+        return redirect('core:dashboard')
+    user = get_object_or_404(User, pk=pk)
+    if user.role == 'patient':
+        messages.error(request, 'Cannot edit patient accounts here.')
+        return redirect('users:staff_list')
+    if request.method == 'POST':
+        form = StaffEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            from apps.tenants.middleware import ensure_request_tenant
+            from apps.tenants.auth import sync_user_to_index
+            tenant = ensure_request_tenant(request)
+            if tenant:
+                sync_user_to_index(tenant, user)
+            messages.success(request, 'Staff member updated.')
+            return redirect('users:staff_list')
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        form = StaffEditForm(instance=user)
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': f'Edit {user.get_full_name() or user.username}',
+        'back_url': 'users:staff_list',
+        'submit_label': 'Save Changes',
+    })

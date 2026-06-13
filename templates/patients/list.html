@@ -16,7 +16,8 @@
             <td>{{ patient.cnic }}</td>
             <td>{{ patient.phone }}</td>
             <td>{{ patient.get_gender_display|default:"-" }}</td>
-            <td><a href="{% url 'patients:detail' patient.pk %}" class="btn btn-ghost btn-xs">View</a></td>
+            <td><a href="{% url 'patients:detail' patient.pk %}" class="btn btn-ghost btn-xs">View</a>
+                <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-ghost btn-xs">Edit</a></td>
         </tr>
         {% empty %}
         <tr><td colspan="6" class="text-center py-8 opacity-60">No patients found</td></tr>

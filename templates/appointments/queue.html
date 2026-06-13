@@ -2,17 +2,27 @@
 {% block title %}OPD Queue — {{ platform_name }}{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold text-primary mb-6">OPD Queue Board</h1>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4" x-data="{ queue: [] }" x-init="setInterval(async () => { const r = await fetch('/api/v1/queue/waiting/', {credentials:'same-origin'}); queue = await r.json(); }, 5000)">
-    <template x-for="entry in queue" :key="entry.id">
-        <div class="card bg-base-100 shadow-lg border-l-4 border-primary">
-            <div class="card-body">
-                <div class="text-4xl font-bold text-primary" x-text="'#' + entry.token_number"></div>
-                <p class="font-semibold" x-text="entry.patient_name"></p>
-                <p class="text-sm opacity-70" x-text="'Dr. ' + entry.doctor_name"></p>
-                <span class="badge" x-text="entry.status"></span>
-            </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for entry in queue %}
+    <div class="card bg-base-100 shadow-lg border-l-4 border-primary">
+        <div class="card-body">
+            <div class="text-4xl font-bold text-primary">#{{ entry.token_number }}</div>
+            <p class="font-semibold">{{ entry.appointment.patient.full_name }}</p>
+            <p class="text-sm opacity-70">Dr. {{ entry.appointment.doctor.get_full_name }}</p>
+            <span class="badge">{{ entry.get_status_display }}</span>
+            <form method="post" class="flex gap-2 mt-3">{% csrf_token %}
+                <input type="hidden" name="entry_id" value="{{ entry.pk }}">
+                {% if entry.status == 'waiting' %}
+                <button name="action" value="call" class="btn btn-primary btn-sm">Call</button>
+                {% endif %}
+                {% if entry.status == 'called' %}
+                <button name="action" value="complete" class="btn btn-accent btn-sm">Complete</button>
+                {% endif %}
+            </form>
         </div>
-    </template>
-    <div x-show="queue.length === 0" class="col-span-3 text-center py-12 opacity-60">No patients in queue</div>
+    </div>
+    {% empty %}
+    <p class="text-base-content/60 col-span-full text-center py-12">No patients in queue today.</p>
+    {% endfor %}
 </div>
 {% endblock %}

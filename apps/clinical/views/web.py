@@ -1,7 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 
-from apps.clinical.models import Visit, Ward, Bed, Admission
+from apps.clinical.forms import VisitForm
+from apps.clinical.models import Visit, Ward, Bed
+from apps.core.decorators import roles_required
 
 
 @login_required
@@ -10,6 +13,29 @@ def visit_list(request):
     if request.user.role == 'doctor':
         visits = visits.filter(doctor=request.user)
     return render(request, 'clinical/visits.html', {'visits': visits})
+
+
+@login_required
+@roles_required('doctor', 'nurse', 'receptionist', 'admin')
+def visit_create(request):
+    if request.method == 'POST':
+        form = VisitForm(request.POST)
+        if form.is_valid():
+            visit = form.save()
+            messages.success(request, f'Visit created for {visit.patient.full_name}.')
+            return redirect('clinical:visit_detail', pk=visit.pk)
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        initial = {}
+        if request.user.role == 'doctor':
+            initial['doctor'] = request.user.pk
+        form = VisitForm(initial=initial)
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': 'New Clinical Visit',
+        'back_url': 'clinical:visits',
+        'submit_label': 'Start Visit',
+    })
 
 
 @login_required

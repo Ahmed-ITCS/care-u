@@ -113,9 +113,9 @@ MIDDLEWARE = [
     'apps.tenants.middleware.PublicSchemaAuthGuardMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.tenants.middleware.TenantSessionAuthMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'apps.tenants.middleware.TenantAccessMiddleware',
     'apps.tenants.middleware.PlanModuleMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
     # Must be last — runs immediately before the view, after auth/session/auditlog

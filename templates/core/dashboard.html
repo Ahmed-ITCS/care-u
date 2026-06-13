@@ -110,20 +110,18 @@
 {% if role == 'admin' or role == 'accountant' %}
 <script>
 const chartDefaults = { responsive: true, plugins: { legend: { labels: { font: { family: 'Plus Jakarta Sans' } } } } } };
-async function loadChart(url, canvasId, type='line') {
-    const res = await fetch(url);
-    const data = await res.json();
+function renderChart(canvasId, chartData, type='line') {
     new Chart(document.getElementById(canvasId), {
         type, data: {
-            labels: data.labels,
-            datasets: [{ label: canvasId, data: data.values,
+            labels: chartData.labels,
+            datasets: [{ label: canvasId, data: chartData.values,
                 borderColor: '#1E40AF', backgroundColor: type === 'doughnut' ? ['#1E40AF','#059669','#D97706','#DC2626'] : 'rgba(30,64,175,0.08)',
                 borderWidth: 2, tension: 0.4, fill: type === 'line', borderRadius: type === 'bar' ? 6 : 0 }]
         }, options: { ...chartDefaults, plugins: { legend: { display: type === 'doughnut' } }, scales: type !== 'doughnut' ? { y: { grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } } : {} }
     });
 }
-loadChart('{% url "core:revenue_chart" %}', 'revenueChart');
-loadChart('{% url "core:appointment_chart" %}', 'appointmentChart', 'doughnut');
+renderChart('revenueChart', {{ revenue_chart_json|safe }});
+renderChart('appointmentChart', {{ appointment_chart_json|safe }}, 'doughnut');
 </script>
 {% endif %}
 {% endblock %}

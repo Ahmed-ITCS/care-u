@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import get_user_model
 
+from apps.core.form_helpers import style_form
+from apps.users.models import Role
+
 User = get_user_model()
 
 
@@ -50,8 +53,23 @@ class StaffCreateForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from apps.users.models import Role
         self.fields['role'].choices = Role.choices
         for field in self.fields.values():
             if 'class' not in field.widget.attrs:
                 field.widget.attrs['class'] = 'input input-bordered w-full'
+
+
+class StaffEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'role', 'phone', 'is_active')
+        widgets = {
+            'role': forms.Select(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['role'].choices = [
+            (r, label) for r, label in Role.choices if r != Role.PATIENT
+        ]
+        style_form(self)

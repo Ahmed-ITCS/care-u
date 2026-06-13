@@ -8,15 +8,21 @@
 <h1 class="text-2xl font-bold text-primary mb-6">Appointment Calendar</h1>
 <div id="calendar" class="card bg-base-100 shadow-lg p-4"></div>
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    const res = await fetch('/api/v1/appointments/today/', { credentials: 'same-origin' });
-    const events = (await res.json()).map(a => ({
-        title: a.patient_name, start: `${a.scheduled_date}T${a.scheduled_time}`,
-        color: '#1E40AF'
-    }));
+document.addEventListener('DOMContentLoaded', () => {
+    const events = [
+        {% for appt in appointments %}
+        {
+            title: '{{ appt.patient.full_name|escapejs }}',
+            start: '{{ appt.scheduled_date }}T{{ appt.scheduled_time }}',
+            color: '#1E40AF'
+        },
+        {% endfor %}
+    ];
     new FullCalendar.Calendar(document.getElementById('calendar'), {
-        initialView: 'dayGridMonth', headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
-        events, height: 'auto'
+        initialView: 'dayGridMonth',
+        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+        events,
+        height: 'auto'
     }).render();
 });
 </script>

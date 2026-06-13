@@ -12,4 +12,5 @@ urlpatterns = [
     path('password-reset/confirm/', views.password_reset_confirm, name='password_reset_confirm'),
     path('staff/', views.staff_list, name='staff_list'),
     path('staff/create/', views.staff_create, name='staff_create'),
+    path('staff/<int:pk>/edit/', views.staff_edit, name='staff_edit'),
 ]

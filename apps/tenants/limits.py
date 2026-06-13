@@ -139,9 +139,22 @@ def get_relative_tenant_path(request):
     return path
 
 
+# Paths always allowed inside a tenant (billing, onboarding, dev tools).
+EXEMPT_TENANT_PATH_PREFIXES = (
+    'static/',
+    'media/',
+    'admin/',
+    'onboarding/',
+    'subscription/',
+    '__debug__/',
+)
+
+
 def module_for_path(relative_path):
     if not relative_path:
         return 'core'
+    if relative_path.startswith(EXEMPT_TENANT_PATH_PREFIXES):
+        return None
     if relative_path.startswith('api/v1/'):
         segments = relative_path.split('/')
         if len(segments) >= 3:
@@ -214,7 +227,7 @@ def check_module_access(request):
         return
 
     relative = get_relative_tenant_path(request)
-    if relative.startswith(('static/', 'media/', 'admin/', 'onboarding/')):
+    if relative.startswith(EXEMPT_TENANT_PATH_PREFIXES):
         return
 
     module = module_for_path(relative)

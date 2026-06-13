@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ patient.full_name }} — {{ platform_name }}{% endblock %}
 {% block content %}
-<div class="mb-6">
-    <a href="{% url 'patients:list' %}" class="btn btn-ghost btn-sm mb-2">&larr; Back</a>
-    <h1 class="text-2xl font-bold text-primary">{{ patient.full_name }}</h1>
-    <p class="text-base-content/70 font-mono">{{ patient.mr_number }} | {{ patient.cnic }}</p>
+<div class="mb-6 flex flex-wrap gap-2 items-center">
+    <a href="{% url 'patients:list' %}" class="btn btn-ghost btn-sm">&larr; Back</a>
+    <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-premium btn-sm">Edit Patient</a>
 </div>
+<h1 class="text-2xl font-bold text-primary">{{ patient.full_name }}</h1>
+<p class="text-base-content/70 font-mono mb-6">{{ patient.mr_number }} | {{ patient.cnic }}</p>
 <div role="tablist" class="tabs tabs-bordered mb-6">
     <a role="tab" class="tab tab-active">Overview</a>
     <a role="tab" class="tab">Allergies ({{ patient.allergies.count }})</a>

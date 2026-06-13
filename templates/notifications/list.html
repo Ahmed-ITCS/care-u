@@ -1,13 +1,35 @@
-{% extends "partials/list_page.html" %}
+{% extends "base.html" %}
 {% block title %}Notifications — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Notifications" %}{{ block.super }}{% endwith %}{% endblock %}
-{% block table_content %}
-<div class="divide-y">
-    {% for n in notifications %}
-    <div class="p-4 flex justify-between items-start {% if not n.is_read %}bg-primary/5{% endif %}">
-        <div><p class="font-semibold">{{ n.title }}</p><p class="text-sm opacity-70">{{ n.message }}</p><p class="text-xs opacity-50 mt-1">{{ n.created_at|timesince }} ago</p></div>
-        {% if not n.is_read %}<span class="badge badge-primary badge-sm">New</span>{% endif %}
+{% block content %}
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="page-header mb-0">
+        <h1>Notifications</h1>
     </div>
-    {% empty %}<p class="text-center py-8 opacity-60">No notifications</p>{% endfor %}
+    {% if notifications %}
+    <form method="post">{% csrf_token %}
+        <input type="hidden" name="action" value="mark_all_read">
+        <button type="submit" class="btn btn-ghost btn-sm">Mark all read</button>
+    </form>
+    {% endif %}
+</div>
+<div class="premium-card divide-y">
+    {% for n in notifications %}
+    <div class="p-4 flex justify-between items-start gap-4 {% if not n.is_read %}bg-primary/5{% endif %}">
+        <div>
+            <p class="font-semibold">{{ n.title }}</p>
+            <p class="text-sm opacity-70">{{ n.message }}</p>
+            <p class="text-xs opacity-50 mt-1">{{ n.created_at|timesince }} ago</p>
+        </div>
+        {% if not n.is_read %}
+        <form method="post">{% csrf_token %}
+            <input type="hidden" name="action" value="mark_read">
+            <input type="hidden" name="notification_id" value="{{ n.pk }}">
+            <button type="submit" class="badge badge-primary badge-sm cursor-pointer border-0">Mark read</button>
+        </form>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-center py-8 opacity-60">No notifications</p>
+    {% endfor %}
 </div>
 {% endblock %}

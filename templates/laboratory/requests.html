@@ -1,6 +1,6 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Lab Requests — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Laboratory Requests" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block content %}{% with page_title="Laboratory Requests" add_url="laboratory:request_create" add_label="New Request" %}{{ block.super }}{% endwith %}{% endblock %}
 {% block table_content %}
 <table class="table table-zebra">
     <thead><tr><th>Request #</th><th>Patient</th><th>Status</th><th>Date</th></tr></thead>
