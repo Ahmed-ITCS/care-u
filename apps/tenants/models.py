@@ -17,6 +17,8 @@ class SubscriptionPlan(models.Model):
     max_patients = models.PositiveIntegerField(default=1000)
     features = models.JSONField(default=dict, blank=True)
     is_active = models.BooleanField(default=True)
+    stripe_product_id = models.CharField(max_length=255, blank=True)
+    stripe_price_id = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ['price_monthly']
@@ -60,6 +62,8 @@ class Hospital(TenantMixin):
     )
     paid_until = models.DateField(null=True, blank=True)
     trial_ends = models.DateField(null=True, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, db_index=True)
+    stripe_subscription_id = models.CharField(max_length=255, blank=True, db_index=True)
 
     primary_color = models.CharField(max_length=7, default='#1E40AF')
     accent_color = models.CharField(max_length=7, default='#059669')
@@ -102,6 +106,17 @@ class Hospital(TenantMixin):
         if self.status == 'trial' and self.trial_ends and self.trial_ends < timezone.now().date():
             return False
         return self.status in ('trial', 'active')
+
+    @property
+    def requires_payment(self):
+        """Trial ended or subscription lapsed — show paywall (not admin suspension)."""
+        if self.status == 'suspended':
+            return False
+        return not self.is_active_tenant
+
+    @property
+    def has_stripe_subscription(self):
+        return bool(self.stripe_subscription_id)
 
     @property
     def days_until_expiry(self):
@@ -207,3 +222,57 @@ class TenantUserIndex(models.Model):
 
     def __str__(self):
         return f'{self.username} @ {self.hospital.subdomain}'
+
+
+class StripeWebhookEvent(models.Model):
+    """Idempotency log for Stripe webhook events (public schema)."""
+
+    stripe_event_id = models.CharField(max_length=255, unique=True)
+    event_type = models.CharField(max_length=128)
+    processed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-processed_at']
+
+    def __str__(self):
+        return f'{self.event_type} ({self.stripe_event_id})'
+
+
+class SubscriptionPayment(models.Model):
+    """SaaS subscription payment attempts — public schema."""
+
+    METHOD_STRIPE = 'stripe'
+    METHOD_JAZZCASH = 'jazzcash'
+    METHOD_EASYPAISA = 'easypaisa'
+    METHOD_CHOICES = [
+        (METHOD_STRIPE, 'Stripe (Card)'),
+        (METHOD_JAZZCASH, 'JazzCash'),
+        (METHOD_EASYPAISA, 'Easypaisa'),
+    ]
+
+    STATUS_PENDING = 'pending'
+    STATUS_COMPLETED = 'completed'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='subscription_payments')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT, related_name='payments')
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default='PKR')
+    txn_ref = models.CharField(max_length=64, unique=True, db_index=True)
+    gateway_txn_id = models.CharField(max_length=128, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    gateway_response = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.txn_ref} ({self.get_method_display()}) — {self.get_status_display()}'

@@ -53,6 +53,7 @@ def navigation_context(request):
             {'label': 'Reports', 'url': 'reports:index', 'icon': 'chart'},
             {'label': 'Staff', 'url': 'users:staff_list', 'icon': 'user-cog'},
             {'label': 'Settings', 'url': 'tenants:hospital_settings', 'icon': 'cog'},
+            {'label': 'Subscription', 'url': 'tenants:billing', 'icon': 'credit-card'},
         ],
         'doctor': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},

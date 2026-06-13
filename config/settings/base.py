@@ -288,9 +288,24 @@ PLATFORM_NAME = env('PLATFORM_NAME', default='CARE-U')
 BASE_DOMAIN = env('BASE_DOMAIN', default='localhost')
 TRIAL_DAYS = env.int('TRIAL_DAYS', default=14)
 
-# Stripe placeholders
+# Stripe
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY', default='')
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
+STRIPE_CURRENCY = env('STRIPE_CURRENCY', default='pkr').lower()
+
+# JazzCash (Pakistan mobile wallet)
+JAZZCASH_MERCHANT_ID = env('JAZZCASH_MERCHANT_ID', default='')
+JAZZCASH_PASSWORD = env('JAZZCASH_PASSWORD', default='')
+JAZZCASH_INTEGRITY_SALT = env('JAZZCASH_INTEGRITY_SALT', default='')
+JAZZCASH_PRODUCT_ID = env('JAZZCASH_PRODUCT_ID', default='RETL')
+JAZZCASH_SANDBOX = env.bool('JAZZCASH_SANDBOX', default=True)
+
+# Easypaisa (Pakistan mobile wallet)
+EASYPAISA_STORE_ID = env('EASYPAISA_STORE_ID', default='')
+EASYPAISA_HASH_KEY = env('EASYPAISA_HASH_KEY', default='')
+EASYPAISA_BANK_ID = env('EASYPAISA_BANK_ID', default='')
+EASYPAISA_SANDBOX = env.bool('EASYPAISA_SANDBOX', default=True)
 
 # AWS S3 (optional)
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='')

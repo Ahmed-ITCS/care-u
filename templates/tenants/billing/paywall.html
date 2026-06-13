@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Subscription — {{ tenant.name }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    {% if request.GET.payment == 'failed' %}
+    <div class="alert alert-error shadow-sm mb-6">
+        <span>Payment was not completed. Please try again or use a different payment method.</span>
+    </div>
+    {% endif %}
+
+    {% if requires_payment %}
+    <div class="alert alert-warning shadow-sm mb-6">
+        <svg class="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+            <h3 class="font-bold">Subscription required</h3>
+            <p class="text-sm">Your trial has ended or your subscription has expired. Choose a plan and pay with card, JazzCash, or Easypaisa.</p>
+        </div>
+    </div>
+    {% elif days_until_expiry is not None and days_until_expiry <= 7 %}
+    <div class="alert alert-info shadow-sm mb-6">
+        <span>Your subscription renews in <strong>{{ days_until_expiry }}</strong> day{{ days_until_expiry|pluralize }}.</span>
+    </div>
+    {% endif %}
+
+    <div class="page-header mb-8">
+        <h1>Subscription &amp; Billing</h1>
+        <p class="text-base-content/60">
+            {% if tenant.plan %}{{ tenant.plan.display_name }}{% else %}No plan{% endif %}
+            {% if tenant.paid_until %} · paid until {{ tenant.paid_until|date:"M d, Y" }}{% elif tenant.trial_ends %} · trial ends {{ tenant.trial_ends|date:"M d, Y" }}{% endif %}
+        </p>
+    </div>
+
+    {% if not is_admin %}
+    <div class="premium-card mb-8">
+        <p class="text-base-content/70">Only hospital administrators can manage billing. Please contact your admin to subscribe or renew.</p>
+    </div>
+    {% else %}
+
+    {% if tenant.has_stripe_subscription and stripe_enabled %}
+    <div class="premium-card mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="font-bold text-lg">Manage card subscription</h2>
+            <p class="text-sm text-base-content/60">Update card, view invoices, or cancel via Stripe Customer Portal.</p>
+        </div>
+        <form method="post" action="{% url 'tenants:billing_portal' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline">Open billing portal</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="space-y-8">
+        {% for plan in plans %}
+        <div class="premium-card {% if tenant.plan_id == plan.pk %}ring-2 ring-primary{% endif %}">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                <div class="flex-1">
+                    <h2 class="text-xl font-bold">{{ plan.display_name }}</h2>
+                    <p class="text-3xl font-extrabold text-primary my-3">
+                        PKR {{ plan.price_monthly|floatformat:0 }}<span class="text-sm font-normal text-base-content/50">/mo</span>
+                    </p>
+                    <ul class="text-sm space-y-1 text-base-content/70">
+                        <li>{{ plan.max_users }} staff users · {{ plan.max_patients }} patients</li>
+                        <li>{{ plan.module_labels }}</li>
+                    </ul>
+                </div>
+
+                {% if any_payment_enabled %}
+                <div class="w-full lg:w-80 space-y-3">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">Pay with</p>
+
+                    {% if stripe_enabled %}
+                    <form method="post" action="{% url 'tenants:billing_checkout' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_id" value="{{ plan.pk }}">
+                        <button type="submit" class="btn btn-premium w-full gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            Card (Stripe)
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if jazzcash_enabled %}
+                    <form method="post" action="{% url 'tenants:billing_jazzcash' %}" class="space-y-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_id" value="{{ plan.pk }}">
+                        <input type="tel" name="mobile_account" class="input input-bordered input-sm w-full" placeholder="JazzCash mobile 03XXXXXXXXX" pattern="03[0-9]{9}" title="Pakistani mobile number">
+                        <button type="submit" class="btn w-full gap-2 text-white border-0" style="background:#C41230">
+                            JazzCash
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    {% if easypaisa_enabled %}
+                    <form method="post" action="{% url 'tenants:billing_easypaisa' %}" class="space-y-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_id" value="{{ plan.pk }}">
+                        <input type="tel" name="mobile_account" class="input input-bordered input-sm w-full" placeholder="Easypaisa mobile 03XXXXXXXXX" pattern="03[0-9]{9}" title="Pakistani mobile number">
+                        <button type="submit" class="btn w-full gap-2 text-white border-0" style="background:#00A651">
+                            Easypaisa
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-sm text-base-content/50">Online payments are not configured. Contact platform support.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-base-content/60">No paid plans available.</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% if requires_payment and any_payment_enabled %}
+<script>
+(function poll() {
+    fetch('{% url "tenants:billing_status" %}', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => { if (data.is_active) window.location.href = '{% url "core:dashboard" %}'; });
+    setTimeout(poll, 4000);
+})();
+</script>
+{% endif %}
+{% endblock %}

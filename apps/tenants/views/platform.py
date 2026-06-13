@@ -15,6 +15,15 @@ from apps.tenants.services import (
 from apps.tenants.decorators import platform_admin_required
 
 
+def _maybe_sync_plan_to_stripe(plan):
+    from apps.tenants.stripe_services import StripeNotConfigured, sync_plan_to_stripe
+    try:
+        if plan.price_monthly > 0 and plan.name != 'trial':
+            sync_plan_to_stripe(plan)
+    except StripeNotConfigured:
+        pass
+
+
 @platform_admin_required
 def platform_dashboard(request):
     """Super Admin dashboard — manage all hospitals."""
@@ -160,8 +169,9 @@ def plan_create(request):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, f'Plan "{form.instance.display_name}" created.')
+            plan = form.save()
+            _maybe_sync_plan_to_stripe(plan)
+            messages.success(request, f'Plan "{plan.display_name}" created.')
             return redirect('platform:plans')
     else:
         form = SubscriptionPlanForm()
@@ -178,7 +188,8 @@ def plan_edit(request, pk):
     if request.method == 'POST':
         form = SubscriptionPlanForm(request.POST, instance=plan)
         if form.is_valid():
-            form.save()
+            plan = form.save()
+            _maybe_sync_plan_to_stripe(plan)
             messages.success(request, f'Plan "{plan.display_name}" updated.')
             return redirect('platform:plans')
     else:

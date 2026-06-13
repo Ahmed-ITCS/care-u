@@ -11,7 +11,7 @@ from django_tenants.middleware.subfolder import TenantSubfolderMiddleware as Dja
 from django_tenants.utils import get_public_schema_name
 
 from apps.tenants.db import ensure_tenant_domain_subfolder, resolve_domain_subfolder
-from apps.tenants.limits import SubscriptionLimitExceeded, check_module_access
+from apps.tenants.limits import SubscriptionLimitExceeded, check_module_access, get_relative_tenant_path
 
 
 class TenantSubfolderMiddleware(DjangoTenantSubfolderMiddleware):
@@ -240,20 +240,41 @@ class TenantSessionAuthMiddleware:
 
 
 class TenantAccessMiddleware:
-    """TENANT: Enforce subscription status — block suspended/expired hospitals."""
+    """TENANT: Enforce subscription status — paywall or block suspended hospitals."""
 
-    EXEMPT_PREFIXES = ('/static/', '/media/', '/admin/')
+    BILLING_PREFIX = 'subscription/'
 
     def __init__(self, get_response):
         self.get_response = get_response
+
+    def _billing_url(self, tenant):
+        prefix = getattr(settings, 'TENANT_SUBFOLDER_PREFIX', 'h/').strip('/')
+        return f'/{prefix}/{tenant.subdomain}/{self.BILLING_PREFIX}'
 
     def __call__(self, request):
         tenant = _active_tenant(request)
 
         if tenant and getattr(tenant, 'schema_name', 'public') != 'public':
-            if not tenant.is_active_tenant:
-                messages.error(request, 'This hospital account is suspended or expired. Please contact support.')
-                return redirect('/suspended/')
+            relative = get_relative_tenant_path(request)
+
+            if tenant.status == 'suspended':
+                if not relative.startswith(self.BILLING_PREFIX):
+                    messages.error(request, 'This hospital account has been suspended. Please contact support.')
+                    return redirect('/suspended/')
+            elif tenant.requires_payment:
+                if not relative.startswith(self.BILLING_PREFIX):
+                    if '/api/' in request.path:
+                        return JsonResponse({
+                            'detail': 'Subscription required. Visit billing to subscribe.',
+                            'billing_url': self._billing_url(tenant),
+                        }, status=402)
+                    return redirect(self._billing_url(tenant))
+            elif not tenant.is_active_tenant:
+                if not relative.startswith(self.BILLING_PREFIX):
+                    messages.error(request, 'This hospital account is expired. Please renew your subscription.')
+                    if '/api/' in request.path:
+                        return JsonResponse({'detail': 'Subscription expired.'}, status=402)
+                    return redirect(self._billing_url(tenant))
 
         return self.get_response(request)
 

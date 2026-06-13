@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting to {{ gateway }}…</title>
+</head>
+<body>
+    <p style="font-family: sans-serif; text-align: center; margin-top: 3rem;">
+        Redirecting to {{ gateway }}…
+    </p>
+    <form id="gateway-form" method="post" action="{{ action_url }}">
+        {% for key, value in fields.items %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+    </form>
+    <script>document.getElementById('gateway-form').submit();</script>
+</body>
+</html>

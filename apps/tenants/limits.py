@@ -142,6 +142,10 @@ def get_relative_tenant_path(request):
 def module_for_path(relative_path):
     if not relative_path:
         return 'core'
+    if relative_path.startswith('static/') or relative_path.startswith('media/'):
+        return None
+    if relative_path.startswith('subscription/'):
+        return None
     if relative_path.startswith('api/v1/'):
         segments = relative_path.split('/')
         if len(segments) >= 3:

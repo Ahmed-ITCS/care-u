@@ -23,6 +23,7 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     path('notifications/', include('apps.notifications.urls')),
     path('onboarding/', include('apps.tenants.urls_onboarding')),
+    path('subscription/', include('apps.tenants.urls_billing')),
 ]
 
 if settings.DEBUG:
