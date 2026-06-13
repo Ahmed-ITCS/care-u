@@ -114,6 +114,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.tenants.middleware.TenantSessionAuthMiddleware',
     'apps.tenants.middleware.TenantAccessMiddleware',
+    'apps.tenants.middleware.PlanModuleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditlog.middleware.AuditlogMiddleware',

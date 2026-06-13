@@ -6,10 +6,12 @@ from django.db import connection
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import JsonResponse
 from django_tenants.middleware.subfolder import TenantSubfolderMiddleware as DjangoTenantSubfolderMiddleware
 from django_tenants.utils import get_public_schema_name
 
 from apps.tenants.db import ensure_tenant_domain_subfolder, resolve_domain_subfolder
+from apps.tenants.limits import SubscriptionLimitExceeded, check_module_access
 
 
 class TenantSubfolderMiddleware(DjangoTenantSubfolderMiddleware):
@@ -253,4 +255,22 @@ class TenantAccessMiddleware:
                 messages.error(request, 'This hospital account is suspended or expired. Please contact support.')
                 return redirect('/suspended/')
 
+        return self.get_response(request)
+
+
+class PlanModuleMiddleware:
+    """Block access to ERP modules not included in the hospital's subscription plan."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            check_module_access(request)
+        except SubscriptionLimitExceeded as exc:
+            detail = str(exc.detail) if hasattr(exc, 'detail') else str(exc)
+            if '/api/' in request.path:
+                return JsonResponse({'detail': detail}, status=403)
+            messages.error(request, detail)
+            return redirect('core:dashboard')
         return self.get_response(request)

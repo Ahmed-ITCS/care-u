@@ -23,7 +23,8 @@ class PlatformUserAdmin(admin.ModelAdmin):
 
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
-    list_display = ('display_name', 'name', 'price_monthly', 'max_users', 'is_active')
+    list_display = ('display_name', 'name', 'price_monthly', 'max_users', 'max_patients', 'is_active')
+    search_fields = ('name', 'display_name')
 
 
 @admin.register(HospitalRegistration)

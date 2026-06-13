@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 
 from apps.tenants.models import Hospital, PlatformUser, SubscriptionPlan
+from apps.tenants.forms import SubscriptionPlanForm
 from apps.tenants.services import (
     extend_hospital_subscription,
     get_tenant_usage_stats,
@@ -64,6 +65,12 @@ def platform_logout(request):
 def hospital_detail(request, pk):
     hospital = get_object_or_404(Hospital.objects.select_related('plan'), pk=pk)
     stats = get_tenant_usage_stats(hospital)
+    plan = hospital.plan
+    limits = {
+        'staff_limit': plan.max_users if plan else None,
+        'patients_limit': plan.max_patients if plan else None,
+        'modules': plan.module_labels() if plan else '—',
+    }
     plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly')
     today = timezone.now().date()
     suggested_paid_until = (
@@ -73,6 +80,7 @@ def hospital_detail(request, pk):
     return render(request, 'tenants/platform/hospital_detail.html', {
         'hospital': hospital,
         'stats': stats,
+        'limits': limits,
         'plans': plans,
         'suggested_paid_until': suggested_paid_until,
         'platform_user': request.platform_user,
@@ -135,4 +143,49 @@ def hospital_list(request):
         hospitals = hospitals.filter(status=status_filter)
     return render(request, 'tenants/platform/hospital_list.html', {
         'hospitals': hospitals, 'platform_user': request.platform_user,
+    })
+
+
+@platform_admin_required
+def plan_list(request):
+    plans = SubscriptionPlan.objects.all().order_by('price_monthly')
+    return render(request, 'tenants/platform/plan_list.html', {
+        'plans': plans,
+        'platform_user': request.platform_user,
+    })
+
+
+@platform_admin_required
+def plan_create(request):
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Plan "{form.instance.display_name}" created.')
+            return redirect('platform:plans')
+    else:
+        form = SubscriptionPlanForm()
+    return render(request, 'tenants/platform/plan_form.html', {
+        'form': form,
+        'title': 'Create subscription plan',
+        'platform_user': request.platform_user,
+    })
+
+
+@platform_admin_required
+def plan_edit(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    if request.method == 'POST':
+        form = SubscriptionPlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Plan "{plan.display_name}" updated.')
+            return redirect('platform:plans')
+    else:
+        form = SubscriptionPlanForm(instance=plan)
+    return render(request, 'tenants/platform/plan_form.html', {
+        'form': form,
+        'plan': plan,
+        'title': f'Edit {plan.display_name}',
+        'platform_user': request.platform_user,
     })

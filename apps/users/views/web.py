@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
 from apps.core.permissions import IsAdmin
+from apps.tenants.limits import check_staff_limit, SubscriptionLimitExceeded
 from apps.users.forms import LoginForm, OTPVerifyForm, PasswordResetRequestForm, StaffCreateForm
 from apps.users.models import User, OTPVerification
 from apps.users.tasks import send_otp_email, send_otp_sms
@@ -130,9 +131,14 @@ def staff_create(request):
     if request.method == 'POST':
         form = StaffCreateForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Staff member created')
-            return redirect('users:staff_list')
+            try:
+                check_staff_limit()
+            except SubscriptionLimitExceeded as exc:
+                messages.error(request, str(exc.detail))
+            else:
+                form.save()
+                messages.success(request, 'Staff member created')
+                return redirect('users:staff_list')
     else:
         form = StaffCreateForm()
     return render(request, 'users/staff_form.html', {'form': form})

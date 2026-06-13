@@ -10,14 +10,7 @@ from django_tenants.models import DomainMixin, TenantMixin
 class SubscriptionPlan(models.Model):
     """SaaS subscription tiers — stored in public schema."""
 
-    PLAN_CHOICES = [
-        ('trial', 'Free Trial'),
-        ('basic', 'Basic'),
-        ('premium', 'Premium'),
-        ('enterprise', 'Enterprise'),
-    ]
-
-    name = models.CharField(max_length=50, choices=PLAN_CHOICES, unique=True)
+    name = models.SlugField(max_length=50, unique=True, help_text='Internal slug, e.g. premium or acme-hospital')
     display_name = models.CharField(max_length=100)
     price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     max_users = models.PositiveIntegerField(default=10)
@@ -30,6 +23,14 @@ class SubscriptionPlan(models.Model):
 
     def __str__(self):
         return self.display_name
+
+    @property
+    def modules_mode(self):
+        return (self.features or {}).get('modules', 'all')
+
+    def module_labels(self):
+        from apps.tenants.limits import plan_module_summary
+        return plan_module_summary(self)
 
 
 class Hospital(TenantMixin):

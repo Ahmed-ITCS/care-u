@@ -37,6 +37,8 @@ def navigation_context(request):
     if not request.user.is_authenticated:
         return {'nav_items': []}
 
+    from apps.tenants.limits import filter_nav_items, get_active_plan
+
     role = getattr(request.user, 'role', None)
     nav_map = {
         'admin': [
@@ -100,4 +102,6 @@ def navigation_context(request):
             {'label': 'My Bills', 'url': 'billing:my_bills', 'icon': 'receipt'},
         ],
     }
-    return {'nav_items': nav_map.get(role, nav_map['admin'])}
+    plan = get_active_plan()
+    items = nav_map.get(role, nav_map['admin'])
+    return {'nav_items': filter_nav_items(items, plan)}

@@ -1,0 +1,84 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}{{ title }} — Platform Admin{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-6 py-10">
+    <a href="{% url 'platform:plans' %}" class="btn btn-ghost btn-sm mb-6">&larr; Back to plans</a>
+
+    <div class="page-header mb-8">
+        <h1>{{ title }}</h1>
+        <p>Set staff/patient limits and which ERP modules are included.</p>
+    </div>
+
+    <form method="post" class="premium-card space-y-5">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-error text-sm">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="grid sm:grid-cols-2 gap-4">
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Slug</span></label>
+                {{ form.name }}
+                {% if form.name.errors %}<p class="text-error text-xs mt-1">{{ form.name.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-base-content/50 mt-1">Lowercase identifier, e.g. <code>premium</code> or <code>acme-custom</code></p>
+            </div>
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Display name</span></label>
+                {{ form.display_name }}
+                {% if form.display_name.errors %}<p class="text-error text-xs mt-1">{{ form.display_name.errors.0 }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-4">
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Price (PKR/mo)</span></label>
+                {{ form.price_monthly }}
+            </div>
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Max staff users</span></label>
+                {{ form.max_users }}
+            </div>
+            <div class="form-control">
+                <label class="label py-1"><span class="label-text font-medium">Max patients</span></label>
+                {{ form.max_patients }}
+            </div>
+        </div>
+
+        <div class="form-control">
+            <label class="label py-1"><span class="label-text font-medium">{{ form.modules_mode.label }}</span></label>
+            {{ form.modules_mode }}
+        </div>
+
+        <div class="form-control" id="custom-modules">
+            <label class="label py-1"><span class="label-text font-medium">{{ form.custom_modules.label }}</span></label>
+            <div class="grid sm:grid-cols-2 gap-2">
+                {% for checkbox in form.custom_modules %}
+                <label class="label cursor-pointer justify-start gap-3 py-1">{{ checkbox.tag }}<span class="label-text">{{ checkbox.choice_label }}</span></label>
+                {% endfor %}
+            </div>
+            {% if form.custom_modules.errors %}<p class="text-error text-xs mt-1">{{ form.custom_modules.errors.0 }}</p>{% endif %}
+            <p class="text-xs text-base-content/50 mt-1">{{ form.custom_modules.help_text }}</p>
+        </div>
+
+        <label class="label cursor-pointer justify-start gap-3">
+            {{ form.is_active }}
+            <span class="label-text font-medium">Active (visible for hospital assignment)</span>
+        </label>
+
+        <button type="submit" class="btn btn-premium">Save plan</button>
+    </form>
+</div>
+<script>
+(function () {
+    const mode = document.getElementById('id_modules_mode');
+    const custom = document.getElementById('custom-modules');
+    function toggle() {
+        custom.style.display = mode && mode.value === 'custom' ? 'block' : 'none';
+    }
+    if (mode) {
+        mode.addEventListener('change', toggle);
+        toggle();
+    }
+})();
+</script>
+{% endblock %}

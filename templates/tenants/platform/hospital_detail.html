@@ -10,9 +10,15 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card"><p class="text-sm text-base-content/50">Patients</p><p class="text-2xl font-bold mt-1">{{ stats.patients }}</p></div>
+        <div class="stat-card">
+            <p class="text-sm text-base-content/50">Patients</p>
+            <p class="text-2xl font-bold mt-1">{{ stats.patients }}{% if limits.patients_limit %}<span class="text-base font-normal text-base-content/40"> / {{ limits.patients_limit }}</span>{% endif %}</p>
+        </div>
         <div class="stat-card"><p class="text-sm text-base-content/50">Appointments</p><p class="text-2xl font-bold mt-1">{{ stats.appointments }}</p></div>
-        <div class="stat-card"><p class="text-sm text-base-content/50">Staff</p><p class="text-2xl font-bold mt-1">{{ stats.staff }}</p></div>
+        <div class="stat-card">
+            <p class="text-sm text-base-content/50">Staff</p>
+            <p class="text-2xl font-bold mt-1">{{ stats.staff }}{% if limits.staff_limit %}<span class="text-base font-normal text-base-content/40"> / {{ limits.staff_limit }}</span>{% endif %}</p>
+        </div>
         <div class="stat-card"><p class="text-sm text-base-content/50">Invoices</p><p class="text-2xl font-bold mt-1">{{ stats.invoices }}</p></div>
     </div>
 
@@ -25,6 +31,10 @@
             <div>
                 <p class="text-base-content/50">Current plan</p>
                 <p class="font-semibold">{{ hospital.plan.display_name|default:"No plan" }}</p>
+            </div>
+            <div>
+                <p class="text-base-content/50">Modules</p>
+                <p class="font-semibold text-sm">{{ limits.modules }}</p>
             </div>
             <div>
                 <p class="text-base-content/50">Status</p>

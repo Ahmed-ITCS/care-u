@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsAdmin, IsClinicalStaff, IsReceptionist, RolePermission
+from apps.tenants.limits import check_patient_limit
 from apps.users.models import Role
 from apps.patients.models import (
     Patient, InsuranceProvider, PatientInsurance, EmergencyContact,
@@ -113,6 +114,7 @@ class PatientViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
+        check_patient_limit()
         serializer.save(registered_by=self.request.user)
 
     @action(detail=True, methods=['get', 'post'])

@@ -1,0 +1,55 @@
+{% extends "tenants/base_public.html" %}
+{% block title %}Subscription Plans — Platform Admin{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-10">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div class="page-header mb-0">
+            <h1>Subscription Plans</h1>
+            <p>Create custom packages and assign them to hospitals</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'platform:plan_create' %}" class="btn btn-premium btn-sm">New Plan</a>
+            <a href="{% url 'platform:dashboard' %}" class="btn btn-ghost btn-sm">&larr; Dashboard</a>
+        </div>
+    </div>
+
+    <div class="premium-card overflow-x-auto">
+        <table class="table premium-table">
+            <thead>
+                <tr>
+                    <th>Plan</th>
+                    <th>Slug</th>
+                    <th>Price/mo</th>
+                    <th>Staff</th>
+                    <th>Patients</th>
+                    <th>Modules</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td class="font-medium">{{ plan.display_name }}</td>
+                    <td class="font-mono text-sm text-base-content/60">{{ plan.name }}</td>
+                    <td>{% if plan.price_monthly == 0 %}Free{% else %}PKR {{ plan.price_monthly|floatformat:0 }}{% endif %}</td>
+                    <td>{{ plan.max_users }}</td>
+                    <td>{{ plan.max_patients }}</td>
+                    <td class="text-sm text-base-content/70 max-w-xs">{{ plan.module_labels }}</td>
+                    <td>
+                        {% if plan.is_active %}
+                        <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                        <span class="badge badge-ghost badge-sm">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'platform:plan_edit' plan.pk %}" class="btn btn-ghost btn-xs text-primary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center py-16 text-base-content/40">No plans yet. Run <code>seed_plans</code> or create one.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

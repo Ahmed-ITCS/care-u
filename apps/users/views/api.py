@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 
 from apps.core.permissions import IsAdmin, RolePermission
+from apps.tenants.limits import check_staff_limit
 from apps.users.models import StaffProfile, DoctorProfile, OTPVerification, Role
 from apps.users.serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
@@ -144,6 +145,12 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ('update', 'partial_update'):
             return UserUpdateSerializer
         return UserSerializer
+
+    def perform_create(self, serializer):
+        role = serializer.validated_data.get('role')
+        if role != Role.PATIENT:
+            check_staff_limit()
+        serializer.save()
 
 
 class StaffProfileViewSet(viewsets.ModelViewSet):
