@@ -4,7 +4,17 @@ from .base import *  # noqa: F401,F403
 
 DEBUG = False
 
-# Render Postgres (and most managed providers) require SSL on external URLs.
+# Comma-separated origins, e.g. https://btc.nidam.ai
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])  # noqa: F405
+
+# Set false until HTTPS is configured (otherwise session/login cookies won't work on HTTP).
+_use_https = env.bool('USE_HTTPS', default=False)  # noqa: F405
+SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=_use_https)  # noqa: F405
+SESSION_COOKIE_SECURE = _use_https
+CSRF_COOKIE_SECURE = _use_https
+
+# Trust X-Forwarded-Proto when behind nginx/Cloudflare.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') if _use_https else None
 _db_url = os.environ.get('DATABASE_URL', '')
 if _db_url and env.bool('DB_SSLMODE_REQUIRE', default='sslmode=' not in _db_url):  # noqa: F405
     DATABASES['default'].setdefault('OPTIONS', {})  # noqa: F405
@@ -20,12 +30,11 @@ if not _redis_url or _redis_url in ('redis://localhost:6379/0', 'redis://127.0.0
         }
     }
 
-SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)  # noqa: F405
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+# Render Postgres (and most managed providers) require SSL on external URLs.
 
 SENTRY_DSN = env('SENTRY_DSN', default='')  # noqa: F405
 if SENTRY_DSN:
