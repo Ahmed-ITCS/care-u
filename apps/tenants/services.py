@@ -103,7 +103,11 @@ def _setup_tenant_schema(hospital, registration_data):
     )
 
     # Create hospital admin user
-    admin_username = registration_data.get('admin_username') or registration_data['admin_email'].split('@')[0]
+    admin_username = (
+        registration_data.get('admin_username')
+        or registration_data.get('subdomain')
+        or registration_data['admin_email'].split('@')[0]
+    )
     password = registration_data.get('admin_password', 'changeme123')
 
     user, created = User.objects.get_or_create(
