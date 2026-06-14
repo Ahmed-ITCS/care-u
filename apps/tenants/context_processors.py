@@ -4,7 +4,7 @@ from django.db import connection
 
 def tenant_context(request):
     """Inject current tenant (hospital) info into all templates."""
-    tenant = getattr(connection, 'tenant', None)
+    tenant = getattr(request, 'tenant', None) or getattr(connection, 'tenant', None)
     is_public = not tenant or getattr(tenant, 'schema_name', 'public') == 'public'
 
     ctx = {

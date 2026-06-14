@@ -3,7 +3,7 @@ from django.db import connection
 
 def hospital_context(request):
     """TENANT-AWARE: Use current tenant branding or fall back to HospitalConfig."""
-    tenant = getattr(connection, 'tenant', None)
+    tenant = getattr(request, 'tenant', None) or getattr(connection, 'tenant', None)
 
     if tenant and getattr(tenant, 'schema_name', 'public') != 'public':
         return {

@@ -13,6 +13,8 @@ from django_tenants.utils import (
     get_tenant_model,
 )
 
+from apps.tenants.sqlite_compat import set_connection_tenant
+
 
 class SqliteSubfolderMiddleware:
     """
@@ -60,6 +62,6 @@ class SqliteSubfolderMiddleware:
             set_urlconf(urlconf)
 
         request.tenant = tenant
-        connection.tenant = tenant
+        set_connection_tenant(connection, tenant)
         clear_url_caches()
         return self.get_response(request)

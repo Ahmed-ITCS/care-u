@@ -23,13 +23,27 @@ def tenant_schema_context(schema_name):
 def set_connection_tenant(connection, tenant):
     if is_sqlite_mode():
         connection.tenant = tenant
+        if tenant is None:
+            connection.schema_name = 'public'
+            return
+        connection.schema_name = getattr(tenant, 'schema_name', 'public')
+        if not getattr(tenant, 'domain_subfolder', None) and getattr(tenant, 'subdomain', None):
+            tenant.domain_subfolder = tenant.subdomain
         return
     connection.set_tenant(tenant)
 
 
 def set_connection_public(connection):
     if is_sqlite_mode():
-        connection.tenant = None
+        from django_tenants.utils import get_public_schema_name, get_tenant_model
+
+        connection.schema_name = get_public_schema_name()
+        try:
+            connection.tenant = get_tenant_model().objects.get(
+                schema_name=get_public_schema_name()
+            )
+        except Exception:
+            connection.tenant = None
         return
     connection.set_schema_to_public()
 
