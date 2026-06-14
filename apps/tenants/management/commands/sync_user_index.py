@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from django_tenants.utils import schema_context
+from apps.tenants.sqlite_compat import tenant_schema_context
 
 from apps.tenants.models import Hospital
 from apps.tenants.auth import sync_user_to_index
@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         total = 0
         for hospital in Hospital.objects.exclude(schema_name='public'):
-            with schema_context(hospital.schema_name):
+            with tenant_schema_context(hospital.schema_name):
                 for user in User.objects.all():
                     sync_user_to_index(hospital, user)
                     total += 1

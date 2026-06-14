@@ -35,34 +35,37 @@ Then visit:
 
 ## Local Development
 
-**Requires PostgreSQL** (SQLite is not supported with schema-based tenancy).
+**Default: SQLite** (`db.sqlite3` in the project root — no PostgreSQL install required).
 
 ```bash
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements/dev.txt
 
 cp .env.example .env
-# Ensure PostgreSQL is running with credentials from .env
 
 cd frontend && npm install && npm run build:css && cd ..
 
-# Migrate public + tenant schemas
-python manage.py migrate_schemas --shared
+python manage.py migrate
 python manage.py setup_public_tenant
 python manage.py seed_plans
 python manage.py create_platform_admin
-
-# Create a demo hospital tenant
-python manage.py create_hospital \
-  --name "General Practice Hospital Islamabad" \
-  --subdomain gph-islamabad \
-  --email admin@gph.com.pk \
-  --password admin123
+python manage.py seed_demo --migrate
 
 python manage.py runserver
 ```
 
 Access demo hospital: http://localhost:8000/h/gph-islamabad/
+
+### PostgreSQL (production / full schema isolation)
+
+For Render or local PostgreSQL with per-hospital schema isolation, set in `.env`:
+
+```
+DB_ENGINE=postgres
+DATABASE_URL=postgres://user:pass@localhost:5432/gph_erp
+```
+
+Then use `migrate_schemas` instead of `migrate` (see Docker setup below).
 
 ## Management Commands
 

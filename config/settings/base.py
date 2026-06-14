@@ -23,6 +23,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 # ---------------------------------------------------------------------------
 
 SHARED_APPS = [
+    'config',
     'django_tenants',
     'apps.tenants',  # Hospital, Domain, PlatformUser, SubscriptionPlan
     'django.contrib.contenttypes',
@@ -96,9 +97,22 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+from config.db import configure_databases
+
+DATABASES, USE_SQLITE = configure_databases(env, BASE_DIR)
+
+if USE_SQLITE:
+    TENANT_SYNC_ROUTER = 'apps.tenants.db_router.SqliteTenantRouter'
+    DATABASE_ROUTERS = (TENANT_SYNC_ROUTER,)
+else:
+    DATABASE_ROUTERS = ('django_tenants.routers.TenantSyncRouter',)
+
 # Middleware — tenant resolver MUST be first
 if TENANT_USE_SUBFOLDER:
-    TENANT_MIDDLEWARE = 'apps.tenants.middleware.TenantSubfolderMiddleware'
+    if USE_SQLITE:
+        TENANT_MIDDLEWARE = 'apps.tenants.middleware_sqlite.SqliteSubfolderMiddleware'
+    else:
+        TENANT_MIDDLEWARE = 'apps.tenants.middleware.TenantSubfolderMiddleware'
 else:
     TENANT_MIDDLEWARE = 'django_tenants.middleware.TenantMainMiddleware'
 
@@ -143,29 +157,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
-
-# PostgreSQL required for schema-based multi-tenancy.
-# Prefer DATABASE_URL (set automatically on Render when Postgres is linked).
-_database_url = env('DATABASE_URL', default='')
-if _database_url:
-    DATABASES = {
-        'default': env.db('DATABASE_URL'),
-    }
-    DATABASES['default']['ENGINE'] = 'django_tenants.postgresql_backend'
-    DATABASES['default'].setdefault('CONN_MAX_AGE', env.int('DB_CONN_MAX_AGE', default=600))
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_tenants.postgresql_backend',
-            'NAME': env('DB_NAME', default='gph_erp'),
-            'USER': env('DB_USER', default='gph'),
-            'PASSWORD': env('DB_PASSWORD', default='gph_secret'),
-            'HOST': env('DB_HOST', default='localhost'),
-            'PORT': env('DB_PORT', default='5432'),
-        }
-    }
-
-DATABASE_ROUTERS = ('django_tenants.routers.TenantSyncRouter',)
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

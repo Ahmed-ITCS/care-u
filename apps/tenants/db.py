@@ -7,9 +7,12 @@ from django_tenants.utils import get_public_schema_name
 
 def _lookup_subdomain(schema_name):
     """Public-schema lookup without ORM (avoids recursive set_tenant calls)."""
+    from django.conf import settings
+
+    table = 'tenants_hospital' if getattr(settings, 'USE_SQLITE', False) else 'public.tenants_hospital'
     with connection.cursor() as cursor:
         cursor.execute(
-            'SELECT subdomain FROM public.tenants_hospital WHERE schema_name = %s LIMIT 1',
+            f'SELECT subdomain FROM {table} WHERE schema_name = %s LIMIT 1',
             [schema_name],
         )
         row = cursor.fetchone()

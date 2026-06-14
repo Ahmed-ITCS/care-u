@@ -9,7 +9,7 @@ Usage:
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django_tenants.utils import schema_context
+from apps.tenants.sqlite_compat import tenant_schema_context
 
 from apps.tenants.models import Hospital
 from apps.tenants.services import create_hospital_tenant
@@ -46,10 +46,8 @@ class Command(BaseCommand):
         subdomain = options['subdomain'].lower().strip()
 
         if options['migrate']:
-            self.stdout.write('Migrating public schema…')
-            call_command('migrate_schemas', '--shared', interactive=False, verbosity=0)
-            self.stdout.write('Migrating tenant schemas…')
-            call_command('migrate_schemas', interactive=False, verbosity=0)
+            from apps.tenants.sqlite_compat import run_migrations
+            run_migrations(self.stdout)
 
         if not options['tenant_only']:
             self._seed_public()
@@ -95,7 +93,7 @@ class Command(BaseCommand):
 
     def _seed_tenant(self, hospital):
         self.stdout.write(f'Seeding tenant schema: {hospital.schema_name}…')
-        with schema_context(hospital.schema_name):
+        with tenant_schema_context(hospital.schema_name):
             call_command('seed_hospital_data', verbosity=0)
             call_command('seed_roles', verbosity=0)
             self._seed_patients()

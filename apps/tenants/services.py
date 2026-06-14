@@ -7,7 +7,7 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
-from django_tenants.utils import schema_context
+from apps.tenants.sqlite_compat import tenant_schema_context
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def create_hospital_tenant(registration_data, approve=True):
     _ensure_tenant_domains(hospital, base_domain=registration_data.get('base_domain', 'localhost'))
 
     # Create tenant admin user and seed data inside the new schema
-    with schema_context(hospital.schema_name):
+    with tenant_schema_context(hospital.schema_name):
         _setup_tenant_schema(hospital, registration_data)
 
     reg = HospitalRegistration.objects.create(
@@ -137,9 +137,8 @@ def _setup_tenant_schema(hospital, registration_data):
 
 def run_tenant_onboarding(hospital, onboarding_data):
     """Complete onboarding wizard — seed departments, services, inventory."""
-    from django_tenants.utils import schema_context
 
-    with schema_context(hospital.schema_name):
+    with tenant_schema_context(hospital.schema_name):
         from apps.core.models import Department, HospitalConfig
         from apps.core.management.commands.seed_hospital_data import Command as SeedCommand
 
@@ -194,11 +193,10 @@ def extend_hospital_subscription(hospital, months=1):
 
 def get_tenant_usage_stats(hospital):
     """Aggregate usage stats for super admin dashboard."""
-    from django_tenants.utils import schema_context
 
     stats = {'patients': 0, 'appointments': 0, 'staff': 0, 'invoices': 0}
     try:
-        with schema_context(hospital.schema_name):
+        with tenant_schema_context(hospital.schema_name):
             from apps.patients.models import Patient
             from apps.appointments.models import Appointment
             from apps.users.models import User

@@ -4,7 +4,7 @@ Use this instead of `createsuperuser` — that command only works in single-tena
 """
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
-from django_tenants.utils import schema_context
+from apps.tenants.sqlite_compat import tenant_schema_context
 
 from apps.tenants.models import Hospital
 from apps.users.models import Role, StaffProfile
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         first_name = parts[0] if parts else ''
         last_name = ' '.join(parts[1:]) if len(parts) > 1 else ''
 
-        with schema_context(hospital.schema_name):
+        with tenant_schema_context(hospital.schema_name):
             if User.objects.filter(username=options['username']).exists():
                 raise CommandError(f'User "{options["username"]}" already exists in this hospital.')
 

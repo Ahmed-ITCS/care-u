@@ -12,6 +12,7 @@ from django_tenants.utils import get_public_schema_name
 
 from apps.tenants.db import ensure_tenant_domain_subfolder, resolve_domain_subfolder
 from apps.tenants.limits import SubscriptionLimitExceeded, check_module_access
+from apps.tenants.sqlite_compat import set_connection_public, set_connection_tenant
 
 
 class TenantSubfolderMiddleware(DjangoTenantSubfolderMiddleware):
@@ -28,7 +29,7 @@ class TenantSubfolderMiddleware(DjangoTenantSubfolderMiddleware):
         tenant.domain_subfolder = slug
         request._tenant_subfolder = slug
         request.tenant = tenant
-        connection.set_tenant(tenant)
+        set_connection_tenant(connection, tenant)
 
 
 def _uses_db_session_backend():
@@ -131,7 +132,7 @@ def _restore_tenant(request):
     if not tenant or getattr(tenant, 'schema_name', 'public') == get_public_schema_name():
         return
     tenant = _ensure_domain_subfolder(tenant, request)
-    connection.set_tenant(tenant)
+    set_connection_tenant(connection, tenant)
     request.tenant = tenant
 
 
@@ -148,8 +149,8 @@ class PublicSchemaSessionMiddleware(SessionMiddleware):
     """
 
     def process_request(self, request):
-        if _uses_db_session_backend():
-            connection.set_schema_to_public()
+        if _uses_db_session_backend() and not getattr(settings, 'USE_SQLITE', False):
+            set_connection_public(connection)
         try:
             super().process_request(request)
             request.session.load()
@@ -157,8 +158,8 @@ class PublicSchemaSessionMiddleware(SessionMiddleware):
             _restore_tenant(request)
 
     def process_response(self, request, response):
-        if _uses_db_session_backend():
-            connection.set_schema_to_public()
+        if _uses_db_session_backend() and not getattr(settings, 'USE_SQLITE', False):
+            set_connection_public(connection)
         try:
             return super().process_response(request, response)
         finally:

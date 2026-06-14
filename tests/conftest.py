@@ -13,17 +13,37 @@ TEST_SCHEMA = 'test_hospital'
 
 @pytest.fixture(scope='session')
 def django_db_setup(django_db_setup, django_db_blocker):
-    """Migrate public schema before tests (django-tenants)."""
+    """Migrate database before tests."""
+    from django.conf import settings
+    from apps.tenants.sqlite_compat import run_migrations
+
     with django_db_blocker.unblock():
-        connection.set_schema_to_public()
-        call_command('migrate_schemas', '--shared', interactive=False, verbosity=0)
+        if getattr(settings, 'USE_SQLITE', False):
+            run_migrations()
+        else:
+            connection.set_schema_to_public()
+            call_command('migrate_schemas', '--shared', interactive=False, verbosity=0)
 
 
 @pytest.fixture
 def test_tenant(db):
     """Isolated hospital tenant for ERP tests."""
+    from django.conf import settings
     from apps.tenants.models import Hospital
     from apps.tenants.services import _ensure_tenant_domains
+
+    if getattr(settings, 'USE_SQLITE', False):
+        hospital, created = Hospital.objects.get_or_create(
+            schema_name=TEST_SCHEMA,
+            defaults={
+                'name': 'Test Hospital',
+                'subdomain': TEST_SUBDOMAIN,
+                'email': 'test@hospital.com',
+                'status': 'active',
+            },
+        )
+        _ensure_tenant_domains(hospital)
+        return hospital
 
     connection.set_schema_to_public()
     hospital, created = Hospital.objects.get_or_create(
@@ -43,7 +63,12 @@ def test_tenant(db):
 
 @pytest.fixture(autouse=True)
 def tenant_schema(test_tenant):
-    """Run each test inside the test hospital schema."""
+    """Run each test inside the test hospital schema (PostgreSQL) or shared DB (SQLite)."""
+    from django.conf import settings
+
+    if getattr(settings, 'USE_SQLITE', False):
+        yield
+        return
     connection.set_tenant(test_tenant)
     yield
     connection.set_schema_to_public()
