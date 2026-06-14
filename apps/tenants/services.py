@@ -106,19 +106,23 @@ def _setup_tenant_schema(hospital, registration_data):
     admin_username = registration_data.get('admin_username') or registration_data['admin_email'].split('@')[0]
     password = registration_data.get('admin_password', 'changeme123')
 
-    user = User.objects.create_user(
+    user, created = User.objects.get_or_create(
         username=admin_username,
-        email=registration_data['admin_email'],
-        password=password,
-        first_name=registration_data['admin_name'].split()[0] if registration_data['admin_name'] else '',
-        last_name=' '.join(registration_data['admin_name'].split()[1:]) if registration_data['admin_name'] else '',
-        role=Role.ADMIN,
-        phone=registration_data.get('admin_phone', ''),
-        is_verified=True,
-        is_staff=True,
-        is_superuser=True,
+        defaults={
+            'email': registration_data['admin_email'],
+            'first_name': registration_data['admin_name'].split()[0] if registration_data['admin_name'] else '',
+            'last_name': ' '.join(registration_data['admin_name'].split()[1:]) if registration_data['admin_name'] else '',
+            'role': Role.ADMIN,
+            'phone': registration_data.get('admin_phone', ''),
+            'is_verified': True,
+            'is_staff': True,
+            'is_superuser': True,
+        },
     )
-    StaffProfile.objects.create(user=user, cnic='')
+    if created:
+        user.set_password(password)
+        user.save(update_fields=['password'])
+    StaffProfile.objects.get_or_create(user=user, defaults={'cnic': ''})
 
     from apps.tenants.auth import sync_user_to_index
     sync_user_to_index(hospital, user)

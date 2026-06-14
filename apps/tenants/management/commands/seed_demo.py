@@ -7,6 +7,7 @@ Usage:
     python manage.py seed_demo --tenant-only --subdomain khawar
 """
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from apps.tenants.sqlite_compat import tenant_schema_context
@@ -87,7 +88,7 @@ class Command(BaseCommand):
             'admin_username': 'admin',
             'admin_password': 'admin123',
             'address': 'F-8 Markaz, Islamabad',
-            'base_domain': 'localhost',
+            'base_domain': settings.BASE_DOMAIN,
         }, approve=True)
         return hospital
 
@@ -127,13 +128,16 @@ class Command(BaseCommand):
         self.stdout.write(f'  Patients: {created} created, {Patient.objects.count()} total')
 
     def _print_summary(self, hospital):
+        from django.conf import settings
+        host = settings.BASE_DOMAIN if settings.BASE_DOMAIN != 'localhost' else 'localhost:8000'
+        scheme = 'https' if getattr(settings, 'USE_HTTPS', False) else 'http'
         prefix = f'/h/{hospital.subdomain}'
         self.stdout.write(self.style.SUCCESS('\nDemo environment ready!\n'))
-        self.stdout.write('Platform admin:  http://localhost:8000/platform/login/')
+        self.stdout.write(f'Platform admin:  {scheme}://{host}/platform/login/')
         self.stdout.write('                 superadmin / superadmin123\n')
-        self.stdout.write(f'Hospital ERP:    http://localhost:8000{prefix}/')
+        self.stdout.write(f'Hospital ERP:    {scheme}://{host}{prefix}/')
         self.stdout.write('                 admin / admin123')
         self.stdout.write('                 doctor1 / doctor123')
         self.stdout.write('                 reception1 / reception123\n')
-        self.stdout.write('Unified login:   http://localhost:8000/login/')
+        self.stdout.write(f'Unified login:   {scheme}://{host}/login/')
         self.stdout.write('                 (username or email for any hospital user)\n')
