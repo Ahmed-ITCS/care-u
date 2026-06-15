@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from apps.core.permissions import IsAdmin, IsClinicalStaff, IsReceptionist, RolePermission
 from apps.tenants.limits import check_patient_limit
 from apps.users.models import Role
+from apps.patients.filters import PatientFilter
 from apps.patients.models import (
     Patient, InsuranceProvider, PatientInsurance, EmergencyContact,
     Allergy, ChronicCondition, MedicalHistory, FamilyHistory,
@@ -93,7 +94,7 @@ class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all()
     permission_classes = [IsAuthenticated, RolePermission]
     required_roles = [Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST]
-    filterset_fields = ['gender', 'city']
+    filterset_class = PatientFilter
     search_fields = ['mr_number', 'cnic', 'full_name', 'phone', 'email']
     ordering_fields = ['created_at', 'full_name', 'mr_number']
 

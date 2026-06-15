@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsPharmacist, RolePermission
 from apps.users.models import Role
+from apps.pharmacy.filters import DrugFilter, PurchaseOrderFilter
 from apps.pharmacy.models import (
     Drug, DrugBatch, DrugCategory, Supplier, PurchaseOrder,
     PurchaseOrderItem, Dispense, DispenseItem, StockMovement,
@@ -69,7 +70,7 @@ class DrugViewSet(viewsets.ModelViewSet):
     queryset = Drug.objects.filter(is_active=True).select_related('category')
     serializer_class = DrugSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ['category']
+    filterset_class = DrugFilter
     search_fields = ['generic_name', 'brand_name', 'barcode']
 
     @action(detail=True, methods=['get'])
@@ -89,7 +90,7 @@ class PurchaseOrderViewSet(viewsets.ModelViewSet):
     queryset = PurchaseOrder.objects.select_related('supplier').prefetch_related('items')
     serializer_class = PurchaseOrderSerializer
     permission_classes = [IsAuthenticated, IsPharmacist]
-    filterset_fields = ['status', 'supplier']
+    filterset_class = PurchaseOrderFilter
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)

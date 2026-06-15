@@ -84,6 +84,9 @@ class Hospital(TenantMixin):
     def save(self, *args, **kwargs):
         if not self.schema_name:
             self.schema_name = self._sanitize_schema_name(self.subdomain)
+        from django.conf import settings
+        if getattr(settings, 'USE_SQLITE', False):
+            self.auto_create_schema = False
         super().save(*args, **kwargs)
 
     @staticmethod

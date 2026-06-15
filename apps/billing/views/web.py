@@ -3,18 +3,24 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
+from apps.billing.filters import InvoiceFilter, PaymentFilter
 from apps.billing.forms import InvoiceFromVisitForm, PaymentForm
 from apps.billing.models import Invoice, Payment
 from apps.billing.services import create_invoice_from_visit, record_payment
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context
 
 
 @login_required
 def invoice_list(request):
-    invoices = Invoice.objects.select_related('patient').order_by('-created_at')[:50]
+    queryset = Invoice.objects.select_related('patient').order_by('-created_at')
     if request.user.role == 'patient':
-        invoices = invoices.filter(patient__user_account=request.user)
-    return render(request, 'billing/invoices.html', {'invoices': invoices})
+        queryset = queryset.filter(patient__user_account=request.user)
+    ctx = filter_list_context(
+        request, queryset, InvoiceFilter, limit=50, clear_url=reverse('billing:invoices'),
+    )
+    ctx['invoices'] = ctx.pop('items')
+    return render(request, 'billing/invoices.html', ctx)
 
 
 @login_required
@@ -80,8 +86,12 @@ def payment_create(request, invoice_pk):
 
 @login_required
 def payment_list(request):
-    payments = Payment.objects.select_related('invoice', 'invoice__patient').order_by('-created_at')[:50]
-    return render(request, 'billing/payments.html', {'payments': payments})
+    queryset = Payment.objects.select_related('invoice', 'invoice__patient').order_by('-created_at')
+    ctx = filter_list_context(
+        request, queryset, PaymentFilter, limit=50, clear_url=reverse('billing:payments'),
+    )
+    ctx['payments'] = ctx.pop('items')
+    return render(request, 'billing/payments.html', ctx)
 
 
 @login_required

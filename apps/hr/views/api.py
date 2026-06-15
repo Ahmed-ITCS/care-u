@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsAdmin
 from apps.users.models import Role
+from apps.hr.filters import AttendanceFilter, LeaveRequestFilter, PayrollRunFilter
 from apps.hr.models import Attendance, LeaveRequest, PayrollRun, PayrollItem, Shift
 from apps.hr.services import process_payroll, approve_leave, reject_leave
 
@@ -66,14 +67,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.select_related('staff')
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
-    filterset_fields = ['staff', 'status', 'date']
+    filterset_class = AttendanceFilter
 
 
 class LeaveRequestViewSet(viewsets.ModelViewSet):
     queryset = LeaveRequest.objects.select_related('staff', 'approved_by')
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ['status', 'leave_type', 'staff']
+    filterset_class = LeaveRequestFilter
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -107,6 +108,8 @@ class PayrollRunViewSet(viewsets.ModelViewSet):
     queryset = PayrollRun.objects.prefetch_related('items')
     serializer_class = PayrollRunSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
+
+    filterset_class = PayrollRunFilter
 
     @action(detail=True, methods=['post'])
     def process(self, request, pk=None):

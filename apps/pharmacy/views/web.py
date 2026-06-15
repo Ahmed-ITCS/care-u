@@ -1,16 +1,23 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context
+from apps.pharmacy.filters import DrugFilter, PurchaseOrderFilter
 from apps.pharmacy.forms import DrugForm, PurchaseOrderForm
 from apps.pharmacy.models import Drug, Dispense, PurchaseOrder
 
 
 @login_required
 def inventory_list(request):
-    drugs = Drug.objects.filter(is_active=True).select_related('category')[:100]
-    return render(request, 'pharmacy/inventory.html', {'drugs': drugs})
+    queryset = Drug.objects.filter(is_active=True).select_related('category').order_by('generic_name')
+    ctx = filter_list_context(
+        request, queryset, DrugFilter, limit=100, clear_url=reverse('pharmacy:inventory'),
+    )
+    ctx['drugs'] = ctx.pop('items')
+    return render(request, 'pharmacy/inventory.html', ctx)
 
 
 @login_required
@@ -71,5 +78,9 @@ def purchase_order_create(request):
 
 @login_required
 def purchase_order_list(request):
-    orders = PurchaseOrder.objects.select_related('supplier').order_by('-created_at')[:50]
-    return render(request, 'pharmacy/purchase_orders.html', {'orders': orders})
+    queryset = PurchaseOrder.objects.select_related('supplier').order_by('-created_at')
+    ctx = filter_list_context(
+        request, queryset, PurchaseOrderFilter, limit=50, clear_url=reverse('pharmacy:purchase_orders'),
+    )
+    ctx['orders'] = ctx.pop('items')
+    return render(request, 'pharmacy/purchase_orders.html', ctx)

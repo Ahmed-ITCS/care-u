@@ -1,7 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
+from apps.core.list_filters import filter_list_context
+from apps.notifications.filters import NotificationFilter
 from apps.notifications.models import Notification
 
 
@@ -18,5 +21,9 @@ def notification_list(request):
             notif.save(update_fields=['is_read', 'updated_at'])
         return redirect('notifications:list')
 
-    notifications = Notification.objects.filter(user=request.user)[:50]
-    return render(request, 'notifications/list.html', {'notifications': notifications})
+    queryset = Notification.objects.filter(user=request.user).order_by('-created_at')
+    ctx = filter_list_context(
+        request, queryset, NotificationFilter, limit=50, clear_url=reverse('notifications:list'),
+    )
+    ctx['notifications'] = ctx.pop('items')
+    return render(request, 'notifications/list.html', ctx)

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsDoctor, IsReceptionist, RolePermission
 from apps.users.models import Role
+from apps.appointments.filters import AppointmentFilter
 from apps.appointments.models import AppointmentType, DoctorSchedule, Appointment, QueueEntry
 
 
@@ -60,7 +61,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated, RolePermission]
     required_roles = [Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.PATIENT]
-    filterset_fields = ['status', 'doctor', 'patient', 'scheduled_date', 'source']
+    filterset_class = AppointmentFilter
     search_fields = ['patient__full_name', 'patient__mr_number']
     ordering_fields = ['scheduled_date', 'scheduled_time']
 

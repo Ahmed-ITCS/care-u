@@ -7,14 +7,6 @@
 {% endwith %}
 {% endblock %}
 {% block table_content %}
-<form method="get" class="mb-4 flex gap-2 items-end">
-    <div class="form-control">
-        <label class="label py-0"><span class="label-text text-xs">Filter by date</span></label>
-        <input type="date" name="date" value="{{ date_filter|default:'' }}" class="input input-bordered input-sm">
-    </div>
-    <button type="submit" class="btn btn-sm btn-outline">Filter</button>
-    {% if date_filter %}<a href="{% url 'hr:attendance' %}" class="btn btn-sm btn-ghost">Clear</a>{% endif %}
-</form>
 <table class="table premium-table">
     <thead>
         <tr><th>Staff</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th><th></th></tr>

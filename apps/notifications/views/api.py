@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from apps.notifications.filters import NotificationFilter
 from apps.notifications.models import Notification
 
 
@@ -16,7 +17,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ['is_read', 'notification_type']
+    filterset_class = NotificationFilter
 
     def get_queryset(self):
         return Notification.objects.filter(user=self.request.user)

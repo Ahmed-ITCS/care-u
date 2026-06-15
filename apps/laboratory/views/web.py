@@ -1,8 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.urls import reverse
 
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context
+from apps.laboratory.filters import LabTestRequestFilter
 from apps.laboratory.forms import LabTestRequestForm
 from apps.laboratory.models import LabTestRequest, LabTestRequestItem
 from apps.laboratory.models import TestCatalog
@@ -10,10 +13,14 @@ from apps.laboratory.models import TestCatalog
 
 @login_required
 def request_list(request):
-    requests = LabTestRequest.objects.select_related('patient').order_by('-created_at')[:50]
+    queryset = LabTestRequest.objects.select_related('patient').order_by('-created_at')
     if request.user.role == 'lab_tech':
-        requests = requests.filter(status__in=['requested', 'collected', 'in_progress'])
-    return render(request, 'laboratory/requests.html', {'lab_requests': requests})
+        queryset = queryset.filter(status__in=['requested', 'collected', 'in_progress'])
+    ctx = filter_list_context(
+        request, queryset, LabTestRequestFilter, limit=50, clear_url=reverse('laboratory:requests'),
+    )
+    ctx['lab_requests'] = ctx.pop('items')
+    return render(request, 'laboratory/requests.html', ctx)
 
 
 @login_required
@@ -43,5 +50,9 @@ def request_create(request):
 
 @login_required
 def result_list(request):
-    requests = LabTestRequest.objects.filter(status='completed').select_related('patient')[:50]
-    return render(request, 'laboratory/results.html', {'lab_requests': requests})
+    queryset = LabTestRequest.objects.filter(status='completed').select_related('patient').order_by('-created_at')
+    ctx = filter_list_context(
+        request, queryset, LabTestRequestFilter, limit=50, clear_url=reverse('laboratory:results'),
+    )
+    ctx['lab_requests'] = ctx.pop('items')
+    return render(request, 'laboratory/results.html', ctx)

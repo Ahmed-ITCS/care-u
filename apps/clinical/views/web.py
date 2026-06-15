@@ -1,18 +1,25 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
+from apps.clinical.filters import VisitFilter
 from apps.clinical.forms import VisitForm
 from apps.clinical.models import Visit, Ward, Bed
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context
 
 
 @login_required
 def visit_list(request):
-    visits = Visit.objects.select_related('patient', 'doctor').order_by('-visit_date')[:50]
+    queryset = Visit.objects.select_related('patient', 'doctor').order_by('-visit_date')
     if request.user.role == 'doctor':
-        visits = visits.filter(doctor=request.user)
-    return render(request, 'clinical/visits.html', {'visits': visits})
+        queryset = queryset.filter(doctor=request.user)
+    ctx = filter_list_context(
+        request, queryset, VisitFilter, limit=50, clear_url=reverse('clinical:visits'),
+    )
+    ctx['visits'] = ctx.pop('items')
+    return render(request, 'clinical/visits.html', ctx)
 
 
 @login_required

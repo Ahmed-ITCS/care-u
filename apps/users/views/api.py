@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, get_user_model
 
 from apps.core.permissions import IsAdmin, RolePermission
 from apps.tenants.limits import check_staff_limit
+from apps.users.filters import StaffUserFilter
 from apps.users.models import StaffProfile, DoctorProfile, OTPVerification, Role
 from apps.users.serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
@@ -135,7 +136,7 @@ class MeView(generics.RetrieveUpdateAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().select_related('staff_profile', 'doctor_profile')
     permission_classes = [IsAuthenticated, IsAdmin]
-    filterset_fields = ['role', 'is_active']
+    filterset_class = StaffUserFilter
     search_fields = ['username', 'email', 'first_name', 'last_name', 'phone']
     ordering_fields = ['date_joined', 'last_name']
 

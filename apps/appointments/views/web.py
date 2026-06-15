@@ -1,20 +1,29 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 
+from apps.appointments.filters import AppointmentFilter
 from apps.appointments.forms import AppointmentForm
 from apps.appointments.models import Appointment, QueueEntry
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context, filters_active
 
 
 @login_required
 def appointment_list(request):
-    today = timezone.now().date()
-    appointments = Appointment.objects.filter(scheduled_date__gte=today).select_related(
+    queryset = Appointment.objects.select_related(
         'patient', 'doctor', 'appointment_type'
-    )[:50]
-    return render(request, 'appointments/list.html', {'appointments': appointments})
+    ).order_by('scheduled_date', 'scheduled_time')
+    if not filters_active(request):
+        today = timezone.now().date()
+        queryset = queryset.filter(scheduled_date__gte=today)
+    ctx = filter_list_context(
+        request, queryset, AppointmentFilter, limit=50, clear_url=reverse('appointments:list'),
+    )
+    ctx['appointments'] = ctx.pop('items')
+    return render(request, 'appointments/list.html', ctx)
 
 
 @login_required

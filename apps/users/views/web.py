@@ -3,10 +3,13 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib import messages
 
 from apps.core.permissions import IsAdmin
+from apps.core.list_filters import filter_list_context
 from apps.tenants.limits import check_staff_limit, SubscriptionLimitExceeded
+from apps.users.filters import StaffUserFilter
 from apps.users.forms import LoginForm, OTPVerifyForm, PasswordResetRequestForm, StaffCreateForm, StaffEditForm
 from apps.users.models import User, OTPVerification
 from apps.users.tasks import send_otp_email, send_otp_sms
@@ -119,8 +122,12 @@ def staff_list(request):
     if request.user.role != 'admin':
         messages.error(request, 'Access denied')
         return redirect('core:dashboard')
-    staff = User.objects.exclude(role='patient').select_related('staff_profile', 'doctor_profile')
-    return render(request, 'users/staff_list.html', {'staff': staff})
+    queryset = User.objects.exclude(role='patient').select_related('staff_profile', 'doctor_profile')
+    ctx = filter_list_context(
+        request, queryset, StaffUserFilter, limit=100, clear_url=reverse('users:staff_list'),
+    )
+    ctx['staff'] = ctx.pop('items')
+    return render(request, 'users/staff_list.html', ctx)
 
 
 @login_required

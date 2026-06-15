@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from apps.core.permissions import IsAccountant, RolePermission
 from apps.users.models import Role
+from apps.billing.filters import InvoiceFilter, PaymentFilter
 from apps.billing.models import ServiceCatalog, ServicePrice, Invoice, InvoiceItem, Payment, LedgerEntry
 from apps.billing.services import create_invoice_from_visit, record_payment
 
@@ -66,7 +67,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     serializer_class = InvoiceSerializer
     permission_classes = [IsAuthenticated, RolePermission]
     required_roles = [Role.ADMIN, Role.ACCOUNTANT, Role.RECEPTIONIST, Role.PATIENT]
-    filterset_fields = ['status', 'patient']
+    filterset_class = InvoiceFilter
     search_fields = ['invoice_number', 'patient__full_name', 'patient__mr_number']
 
     def get_queryset(self):
@@ -99,7 +100,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.select_related('invoice', 'invoice__patient')
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated, IsAccountant]
-    filterset_fields = ['method', 'status', 'invoice']
+    filterset_class = PaymentFilter
 
     def perform_create(self, serializer):
         payment = record_payment(

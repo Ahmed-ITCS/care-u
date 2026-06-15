@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import models
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from apps.core.decorators import roles_required
+from apps.core.list_filters import filter_list_context
+from apps.patients.filters import PatientFilter
 from apps.patients.forms import PatientForm
 from apps.patients.models import Patient
 from apps.tenants.limits import check_patient_limit, SubscriptionLimitExceeded
@@ -13,16 +14,12 @@ from apps.tenants.limits import check_patient_limit, SubscriptionLimitExceeded
 @login_required
 @roles_required('receptionist', 'doctor', 'nurse', 'admin')
 def patient_list(request):
-    patients = Patient.objects.all()[:100]
-    q = request.GET.get('q', '')
-    if q:
-        patients = Patient.objects.filter(
-            models.Q(mr_number__icontains=q) |
-            models.Q(cnic__icontains=q) |
-            models.Q(full_name__icontains=q) |
-            models.Q(phone__icontains=q)
-        )[:50]
-    return render(request, 'patients/list.html', {'patients': patients, 'q': q})
+    queryset = Patient.objects.all().order_by('-created_at')
+    ctx = filter_list_context(
+        request, queryset, PatientFilter, limit=100, clear_url=reverse('patients:list'),
+    )
+    ctx['patients'] = ctx.pop('items')
+    return render(request, 'patients/list.html', ctx)
 
 
 @login_required

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsClinicalStaff, IsDoctor, RolePermission
 from apps.users.models import Role
+from apps.clinical.filters import VisitFilter
 from apps.clinical.models import (
     Visit, OPDVisit, Ward, Bed, Admission, Prescription, PrescriptionItem,
     NursingNote, LabOrder, Referral,
@@ -73,7 +74,7 @@ class VisitViewSet(viewsets.ModelViewSet):
     queryset = Visit.objects.select_related('patient', 'doctor').prefetch_related('prescriptions')
     serializer_class = VisitSerializer
     permission_classes = [IsAuthenticated, IsClinicalStaff]
-    filterset_fields = ['visit_type', 'status', 'patient', 'doctor']
+    filterset_class = VisitFilter
     search_fields = ['patient__full_name', 'patient__mr_number']
     ordering_fields = ['visit_date']
 

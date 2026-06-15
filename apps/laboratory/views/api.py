@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.core.permissions import IsLabTech, IsClinicalStaff, RolePermission
 from apps.users.models import Role
+from apps.laboratory.filters import LabTestRequestFilter
 from apps.laboratory.models import (
     TestCategory, TestCatalog, LabTestRequest, LabTestRequestItem,
     SampleCollection, TestResult, LabReport,
@@ -55,7 +56,7 @@ class LabTestRequestViewSet(viewsets.ModelViewSet):
     serializer_class = LabTestRequestSerializer
     permission_classes = [IsAuthenticated, RolePermission]
     required_roles = [Role.ADMIN, Role.DOCTOR, Role.LAB_TECH, Role.NURSE]
-    filterset_fields = ['status', 'patient']
+    filterset_class = LabTestRequestFilter
     search_fields = ['request_number', 'patient__full_name', 'patient__mr_number']
 
     def perform_create(self, serializer):

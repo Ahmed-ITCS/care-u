@@ -1,27 +1,28 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.hr.decorators import admin_required
+from apps.hr.filters import AttendanceFilter, LeaveRequestFilter, PayrollRunFilter
 from apps.hr.forms import AttendanceForm, LeaveRequestForm, LeaveApprovalForm, PayrollRunForm
 from apps.hr.models import Attendance, LeaveRequest, PayrollRun
 from apps.hr.services import process_payroll, approve_leave, reject_leave
+from apps.core.list_filters import filter_list_context
 from apps.users.models import Role
 
 
 @login_required
 @admin_required
 def attendance_list(request):
-    records = Attendance.objects.select_related('staff').order_by('-date')
-    date_filter = request.GET.get('date')
-    if date_filter:
-        records = records.filter(date=date_filter)
-    return render(request, 'hr/attendance.html', {
-        'records': records[:100],
-        'date_filter': date_filter,
-        'is_admin': True,
-    })
+    queryset = Attendance.objects.select_related('staff').order_by('-date')
+    ctx = filter_list_context(
+        request, queryset, AttendanceFilter, limit=100, clear_url=reverse('hr:attendance'),
+    )
+    ctx['records'] = ctx.pop('items')
+    ctx['is_admin'] = True
+    return render(request, 'hr/attendance.html', ctx)
 
 
 @login_required
@@ -58,18 +59,18 @@ def attendance_edit(request, pk):
 @login_required
 def leave_list(request):
     is_admin = request.user.role == Role.ADMIN
-    leaves = LeaveRequest.objects.select_related('staff', 'approved_by').order_by('-created_at')
+    queryset = LeaveRequest.objects.select_related('staff', 'approved_by').order_by('-created_at')
     if not is_admin:
-        leaves = leaves.filter(staff=request.user)
-    status_filter = request.GET.get('status')
-    if status_filter:
-        leaves = leaves.filter(status=status_filter)
-    return render(request, 'hr/leaves.html', {
-        'leaves': leaves[:100],
-        'is_admin': is_admin,
-        'status_filter': status_filter,
-        'approval_form': LeaveApprovalForm(),
-    })
+        queryset = queryset.filter(staff=request.user)
+    ctx = filter_list_context(
+        request, queryset, LeaveRequestFilter, limit=100,
+        exclude_fields=() if is_admin else ('staff',),
+        clear_url=reverse('hr:leaves'),
+    )
+    ctx['leaves'] = ctx.pop('items')
+    ctx['is_admin'] = is_admin
+    ctx['approval_form'] = LeaveApprovalForm()
+    return render(request, 'hr/leaves.html', ctx)
 
 
 @login_required
@@ -117,8 +118,12 @@ def leave_reject(request, pk):
 @login_required
 @admin_required
 def payroll_list(request):
-    payrolls = PayrollRun.objects.prefetch_related('items').order_by('-year', '-month')
-    return render(request, 'hr/payroll.html', {'payrolls': payrolls[:24]})
+    queryset = PayrollRun.objects.prefetch_related('items').order_by('-year', '-month')
+    ctx = filter_list_context(
+        request, queryset, PayrollRunFilter, limit=24, clear_url=reverse('hr:payroll'),
+    )
+    ctx['payrolls'] = ctx.pop('items')
+    return render(request, 'hr/payroll.html', ctx)
 
 
 @login_required

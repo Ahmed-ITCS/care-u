@@ -7,12 +7,6 @@
 {% endwith %}
 {% endblock %}
 {% block table_content %}
-<div class="flex flex-wrap gap-2 mb-4">
-    <a href="{% url 'hr:leaves' %}" class="btn btn-xs {% if not status_filter %}btn-primary{% else %}btn-ghost{% endif %}">All</a>
-    <a href="?status=pending" class="btn btn-xs {% if status_filter == 'pending' %}btn-primary{% else %}btn-ghost{% endif %}">Pending</a>
-    <a href="?status=approved" class="btn btn-xs {% if status_filter == 'approved' %}btn-primary{% else %}btn-ghost{% endif %}">Approved</a>
-    <a href="?status=rejected" class="btn btn-xs {% if status_filter == 'rejected' %}btn-primary{% else %}btn-ghost{% endif %}">Rejected</a>
-</div>
 <table class="table premium-table">
     <thead>
         <tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Status</th><th>Notes</th>{% if is_admin %}<th></th>{% endif %}</tr>
