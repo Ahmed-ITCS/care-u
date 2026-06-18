@@ -1,23 +1,24 @@
 from django import forms
 
-FILTER_INPUT = 'filter-input'
-FILTER_SELECT = 'filter-select'
-FILTER_SEARCH = 'filter-input filter-input-search'
-FILTER_CHECKBOX = 'filter-checkbox'
+# DaisyUI classes applied directly — never use "filter-*" prefix (Tailwind strips those)
+INPUT_CLS = 'input input-bordered input-sm w-full h-9 min-h-9 text-sm bg-base-100'
+SELECT_CLS = 'select select-bordered select-sm w-full h-9 min-h-9 text-sm bg-base-100'
+SEARCH_CLS = INPUT_CLS + ' pl-9'
+CHECKBOX_CLS = 'checkbox checkbox-primary checkbox-sm'
 
 
 def style_filter_form(form):
     for field in form.fields.values():
         widget = field.widget
         if isinstance(widget, forms.CheckboxInput):
-            widget.attrs.setdefault('class', FILTER_CHECKBOX)
+            widget.attrs.setdefault('class', CHECKBOX_CLS)
         elif isinstance(widget, forms.Select):
-            widget.attrs.setdefault('class', FILTER_SELECT)
+            widget.attrs.setdefault('class', SELECT_CLS)
         elif field.label in ('Search', 'Patient'):
-            widget.attrs.setdefault('class', FILTER_SEARCH)
+            widget.attrs.setdefault('class', SEARCH_CLS)
             widget.attrs.setdefault('placeholder', 'Name, MR number, CNIC, phone…')
         else:
-            widget.attrs.setdefault('class', FILTER_INPUT)
+            widget.attrs.setdefault('class', INPUT_CLS)
             if not widget.attrs.get('placeholder') and field.label:
                 widget.attrs.setdefault('placeholder', str(field.label))
     return form
