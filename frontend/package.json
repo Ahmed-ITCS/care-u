@@ -2,8 +2,9 @@
   "name": "gph-erp-frontend",
   "version": "1.0.0",
   "scripts": {
-    "build:css": "tailwindcss -i ../static/src/input.css -o ../static/css/output.css --minify",
-    "watch:css": "tailwindcss -i ../static/src/input.css -o ../static/css/output.css --watch"
+    "build:css": "npx tailwindcss -i ../static/src/input.css -o ../static/css/output.css --minify",
+    "watch:css": "npx tailwindcss -i ../static/src/input.css -o ../static/css/output.css --watch",
+    "setup": "npm install && npm run build:css"
   },
   "devDependencies": {
     "daisyui": "^4.12.14",
