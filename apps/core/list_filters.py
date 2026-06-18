@@ -1,18 +1,19 @@
 from django import forms
 
-FILTER_INPUT = 'input input-bordered input-sm w-full'
-FILTER_SELECT = 'select select-bordered select-sm w-full'
-FILTER_SEARCH = 'input input-bordered input-sm w-full pl-9'
+FILTER_INPUT = 'filter-input'
+FILTER_SELECT = 'filter-select'
+FILTER_SEARCH = 'filter-input filter-input-search'
+FILTER_CHECKBOX = 'filter-checkbox'
 
 
 def style_filter_form(form):
     for field in form.fields.values():
         widget = field.widget
         if isinstance(widget, forms.CheckboxInput):
-            widget.attrs.setdefault('class', 'checkbox checkbox-primary checkbox-sm mt-2')
+            widget.attrs.setdefault('class', FILTER_CHECKBOX)
         elif isinstance(widget, forms.Select):
             widget.attrs.setdefault('class', FILTER_SELECT)
-        elif field.label == 'Search' or field.label == 'Patient':
+        elif field.label in ('Search', 'Patient'):
             widget.attrs.setdefault('class', FILTER_SEARCH)
             widget.attrs.setdefault('placeholder', 'Name, MR number, CNIC, phone…')
         else:

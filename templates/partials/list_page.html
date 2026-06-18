@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title|default:"List" }} — {{ platform_name }}{% endblock %}
 {% block content %}
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
     <div class="page-header mb-0">
         <h1>{{ page_title|default:"List" }}</h1>
         {% if page_subtitle %}<p>{{ page_subtitle }}</p>{% endif %}
