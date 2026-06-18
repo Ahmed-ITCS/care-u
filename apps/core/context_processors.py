@@ -1,4 +1,15 @@
 from django.db import connection
+from django.conf import settings
+
+
+def static_version(request):
+    """Cache-bust static CSS/JS in development when output.css is rebuilt."""
+    css_path = settings.BASE_DIR / 'static' / 'css' / 'output.css'
+    try:
+        version = int(css_path.stat().st_mtime)
+    except OSError:
+        version = 1
+    return {'static_version': version}
 
 
 def hospital_context(request):

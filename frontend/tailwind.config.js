@@ -3,6 +3,24 @@ module.exports = {
   content: [
     '../templates/**/*.html',
     '../apps/**/templates/**/*.html',
+    '../static/src/**/*.css',
+  ],
+  safelist: [
+    'filter-input',
+    'filter-select',
+    'filter-input-search',
+    'filter-checkbox',
+    'filter-bar-primary',
+    'filter-field',
+    'filter-field-wide',
+    'filter-field-checkbox',
+    'filter-label',
+    'filter-control',
+    'filter-actions',
+    'filter-advanced',
+    'filter-advanced-grid',
+    'filter-group-label',
+    'filter-search-icon',
   ],
   theme: {
     extend: {

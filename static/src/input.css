@@ -140,61 +140,69 @@
     @apply input input-bordered w-full bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
   }
 
-  /* ── List filters (prefix list-filter- avoids Tailwind filter utility clash) ── */
-  .list-filter-bar {
+  /* ── List filters ── */
+  .filter-bar-primary {
     @apply flex flex-wrap items-end gap-x-3 gap-y-4;
   }
 
-  .list-filter-field {
+  .filter-field {
     @apply flex flex-col w-full sm:w-[calc(50%-0.375rem)] lg:w-44 xl:flex-1 xl:min-w-[11rem] xl:max-w-[14rem];
   }
 
-  .list-filter-field-wide {
+  .filter-field-wide {
     @apply lg:w-56 xl:max-w-xs;
   }
 
-  .list-filter-label {
+  .filter-label {
     @apply block text-xs font-medium text-base-content/70 mb-1.5 leading-4 min-h-[1rem];
   }
 
-  .list-filter-control {
+  .filter-control {
     @apply relative w-full;
   }
 
-  .list-filter-search-icon {
-    @apply w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/35 pointer-events-none z-10;
+  .filter-input {
+    @apply input input-bordered input-sm w-full h-9 min-h-9 text-sm bg-base-100;
   }
 
-  .list-filter-field-check .list-filter-control {
+  .filter-select {
+    @apply select select-bordered select-sm w-full h-9 min-h-9 text-sm bg-base-100;
+  }
+
+  .filter-input-search {
+    @apply pl-9;
+  }
+
+  .filter-search-icon {
+    @apply w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/35 pointer-events-none;
+  }
+
+  .filter-field-checkbox .filter-control {
     @apply flex items-center h-9;
   }
 
-  .list-filter-actions {
-    @apply flex items-center gap-2 shrink-0 w-full sm:w-auto;
+  .filter-field-checkbox .filter-checkbox {
+    @apply checkbox checkbox-primary checkbox-sm;
   }
 
-  .list-filter-actions .btn {
+  .filter-actions {
+    @apply flex items-center gap-2 shrink-0 w-full sm:w-auto pt-1 sm:pt-0;
+  }
+
+  .filter-actions .btn {
     @apply h-9 min-h-9;
   }
 
-  .list-filter-advanced {
+  .filter-advanced {
     @apply mt-4 pt-4 border-t border-base-200/80;
   }
 
-  .list-filter-advanced-grid {
+  .filter-advanced-grid {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-4;
   }
 
-  .list-filter-group-label {
-    @apply text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/45 mb-3;
-  }
-
-  .list-filter-advanced .list-filter-field {
-    @apply w-full max-w-none;
-  }
-
-  .list-filter-advanced summary::-webkit-details-marker {
-    display: none;
+  .filter-group-label {
+    @apply text-[0.65rem] font-semibold uppercase tracking-wider text-base-content/45 mb-3 col-span-full;
   }
 
   .btn-premium {

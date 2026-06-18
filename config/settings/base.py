@@ -150,6 +150,7 @@ TEMPLATES = [
                 'apps.tenants.context_processors.tenant_context',
                 'apps.core.context_processors.hospital_context',
                 'apps.core.context_processors.navigation_context',
+                'apps.core.context_processors.static_version',
             ],
         },
     },
