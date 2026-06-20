@@ -123,9 +123,13 @@ def _setup_tenant_schema(hospital, registration_data):
             'is_superuser': True,
         },
     )
-    if created:
-        user.set_password(password)
-        user.save(update_fields=['password'])
+    user.email = registration_data['admin_email']
+    user.role = Role.ADMIN
+    user.is_staff = True
+    user.is_superuser = True
+    user.is_active = True
+    user.set_password(password)
+    user.save()
     StaffProfile.objects.get_or_create(user=user, defaults={'cnic': ''})
 
     from apps.tenants.auth import sync_user_to_index

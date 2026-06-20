@@ -46,14 +46,17 @@ def hospital_context(request):
 
 def navigation_context(request):
     if not request.user.is_authenticated:
-        return {'nav_items': []}
+        return {'nav_items': [], 'nav_owner_items': [], 'is_hospital_owner': False, 'role_label': ''}
 
     from apps.tenants.limits import filter_nav_items, get_active_plan
 
     role = getattr(request.user, 'role', None)
+    role_label = request.user.get_role_display()
+
     nav_map = {
         'admin': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
+            {'label': 'Import Data', 'url': 'core:data_import', 'icon': 'upload'},
             {'label': 'Patients', 'url': 'patients:list', 'icon': 'users'},
             {'label': 'Appointments', 'url': 'appointments:list', 'icon': 'calendar'},
             {'label': 'Clinical', 'url': 'clinical:visits', 'icon': 'stethoscope'},
@@ -68,6 +71,7 @@ def navigation_context(request):
         'doctor': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
             {'label': 'My Appointments', 'url': 'appointments:doctor_calendar', 'icon': 'calendar'},
+            {'label': 'My Availability', 'url': 'appointments:doctor_availability', 'icon': 'clock'},
             {'label': 'Patients', 'url': 'patients:list', 'icon': 'users'},
             {'label': 'Visits', 'url': 'clinical:visits', 'icon': 'stethoscope'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
@@ -81,6 +85,7 @@ def navigation_context(request):
         ],
         'receptionist': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
+            {'label': 'Import Data', 'url': 'core:data_import', 'icon': 'upload'},
             {'label': 'Queue', 'url': 'appointments:queue', 'icon': 'list'},
             {'label': 'Appointments', 'url': 'appointments:list', 'icon': 'calendar'},
             {'label': 'Register Patient', 'url': 'patients:register', 'icon': 'user-plus'},
@@ -95,6 +100,7 @@ def navigation_context(request):
         ],
         'pharmacist': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
+            {'label': 'Import Data', 'url': 'core:data_import', 'icon': 'upload'},
             {'label': 'Inventory', 'url': 'pharmacy:inventory', 'icon': 'pill'},
             {'label': 'Dispense', 'url': 'pharmacy:dispense', 'icon': 'prescription'},
             {'label': 'Purchase Orders', 'url': 'pharmacy:purchase_orders', 'icon': 'shopping-cart'},
@@ -102,6 +108,7 @@ def navigation_context(request):
         ],
         'lab_tech': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
+            {'label': 'Import Data', 'url': 'core:data_import', 'icon': 'upload'},
             {'label': 'Test Requests', 'url': 'laboratory:requests', 'icon': 'flask'},
             {'label': 'Results', 'url': 'laboratory:results', 'icon': 'clipboard'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
@@ -114,5 +121,10 @@ def navigation_context(request):
         ],
     }
     plan = get_active_plan()
-    items = nav_map.get(role, nav_map['admin'])
-    return {'nav_items': filter_nav_items(items, plan)}
+    items = nav_map.get(role, [])
+    return {
+        'nav_items': filter_nav_items(items, plan),
+        'nav_owner_items': [],
+        'is_hospital_owner': request.user.is_superuser,
+        'role_label': role_label,
+    }

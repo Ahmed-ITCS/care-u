@@ -9,6 +9,7 @@ STAFF_ROLES = [choice for choice in Role.choices if choice[0] != Role.PATIENT]
 
 
 class StaffUserFilter(django_filters.FilterSet):
+    search_placeholder = 'Name, username, email, phone...'
     q = django_filters.CharFilter(method='filter_search', label='Search')
     role = django_filters.ChoiceFilter(choices=STAFF_ROLES, empty_label='All roles')
     is_active = django_filters.BooleanFilter(label='Active only')

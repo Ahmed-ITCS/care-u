@@ -1,0 +1,430 @@
+% CARE-U User Documentation
+% Compile: pdflatex user-documentation.tex (run twice for TOC)
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black,
+    pdftitle={CARE-U User Guide},
+}
+
+\newtcolorbox{tipbox}{
+    colback=blue!5,
+    colframe=blue!40!black,
+    title=\textbf{Tip},
+    fonttitle=\bfseries,
+}
+
+\newtcolorbox{warningbox}{
+    colback=orange!8,
+    colframe=orange!60!black,
+    title=\textbf{Important},
+    fonttitle=\bfseries,
+}
+
+\title{\textbf{CARE-U}\\[0.4em]
+\large User Guide}
+\author{Hospital Staff \& Administrators}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+%==============================================================================
+\chapter{Getting Started}
+%==============================================================================
+
+\section{What is CARE-U?}
+
+CARE-U is a cloud hospital management system. Each hospital gets its own private workspace with modules for patients, appointments, clinical records, billing, pharmacy, laboratory, HR, and reports.
+
+\section{Registering Your Hospital}
+
+\begin{enumerate}
+    \item Go to the platform website and click \textbf{Register}.
+    \item Fill in:
+    \begin{itemize}[noitemsep]
+        \item Hospital name
+        \item Hospital code (subdomain) --- e.g.\ \texttt{my-clinic}
+        \item Admin name, email, phone
+        \item Admin username and password
+    \end{itemize}
+    \item Submit the form. Your workspace is created automatically.
+    \item On the success page, note your \textbf{Hospital code} --- you need this to sign in.
+\end{enumerate}
+
+\begin{warningbox}
+Each hospital is completely separate. Data from one hospital is never visible to another. If you register a second hospital, you must sign in with \textbf{that hospital's code}.
+\end{warningbox}
+
+\section{Signing In}
+
+Open \textbf{Sign In} and enter:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+\textbf{Field} & \textbf{What to enter} \\
+\midrule
+Hospital code & Your subdomain from registration (e.g.\ \texttt{my-clinic}) \\
+Username or Email & The admin username you chose, or your email \\
+Password & Your password \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+After login you are taken to your hospital dashboard at:
+\begin{center}
+\texttt{/h/your-hospital-code/}
+\end{center}
+
+\begin{tipbox}
+If your username is \texttt{admin} (common default), always enter your \textbf{hospital code}. Many hospitals use \texttt{admin} --- without the code, the system cannot tell which hospital you mean.
+\end{tipbox}
+
+\section{Completing Onboarding}
+
+New hospitals should complete the onboarding wizard:
+\begin{enumerate}[noitemsep]
+    \item Set departments
+    \item Choose brand colors
+    \item Seed default catalog data (lab tests, drugs, services)
+\end{enumerate}
+
+%==============================================================================
+\chapter{Dashboard}
+%==============================================================================
+
+The dashboard shows role-specific summary cards:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Admin / Receptionist} --- patients today, appointments, pending bills, revenue
+    \item \textbf{Doctor} --- today's appointments, pending prescriptions
+    \item \textbf{Receptionist} --- queue count
+    \item \textbf{Pharmacist} --- pending dispenses, expiring stock
+    \item \textbf{Lab technician} --- pending samples and results
+\end{itemize}
+
+Admins and accountants also see revenue and appointment charts.
+
+%==============================================================================
+\chapter{Patients}
+%==============================================================================
+
+\section{Registering a Patient}
+
+\textbf{Who:} Receptionist, Admin
+
+\begin{enumerate}[noitemsep]
+    \item Sidebar $\rightarrow$ \textbf{Register Patient} (or Patients $\rightarrow$ Add)
+    \item Enter CNIC (format: \texttt{12345-1234567-1}), name, phone, and optional demographics
+    \item Save --- an MR number is generated automatically (e.g.\ \texttt{CARE-U-2026-00001})
+\end{enumerate}
+
+\section{Patient Profile}
+
+Open any patient to see:
+\begin{itemize}[noitemsep]
+    \item Demographics and emergency contacts
+    \item \textbf{Billing tab} --- invoices, total billed, paid, and balance due
+\end{itemize}
+
+\section{Bulk Import (CSV)}
+
+\textbf{Who:} Admin, Receptionist
+
+Sidebar $\rightarrow$ \textbf{Import Data} $\rightarrow$ Patients
+
+\begin{enumerate}[noitemsep]
+    \item Download the sample CSV
+    \item Fill required columns: \texttt{cnic}, \texttt{first\_name}, \texttt{last\_name}, \texttt{phone}
+    \item Upload and review import results
+\end{enumerate}
+
+%==============================================================================
+\chapter{Appointments}
+%==============================================================================
+
+\section{Booking an Appointment}
+
+\textbf{Who:} Receptionist, Admin
+
+\begin{enumerate}
+    \item Go to \textbf{Appointments} $\rightarrow$ \textbf{Book}
+    \item Select patient, appointment type, \textbf{date}, and \textbf{doctor}
+    \item The \textbf{Available time slot} dropdown shows only free slots based on:
+    \begin{itemize}[noitemsep]
+        \item Doctor's on-duty status
+        \item Weekly schedule
+        \item Date exceptions (leave, etc.)
+        \item Already booked times
+    \end{itemize}
+    \item Choose a slot and confirm
+\end{enumerate}
+
+\begin{warningbox}
+If no slots appear, the doctor may be off duty or has no schedule set. Ask the doctor to configure availability under \textbf{My Availability}.
+\end{warningbox}
+
+\section{Queue Board}
+
+\textbf{Who:} Receptionist
+
+\textbf{Queue} shows today's waiting patients. Actions:
+\begin{itemize}[noitemsep]
+    \item \textbf{Call} --- announce token
+    \item \textbf{Complete} --- mark consultation done
+\end{itemize}
+
+\section{Doctor: My Availability}
+
+\textbf{Who:} Doctor
+
+\begin{itemize}[noitemsep]
+    \item Toggle \textbf{On Duty / Off Duty}
+    \item Add weekly schedule slots (day, start/end time)
+    \item Add date exceptions for leave or special hours
+\end{itemize}
+
+When off duty, the doctor is hidden from appointment booking.
+
+%==============================================================================
+\chapter{Clinical}
+%==============================================================================
+
+\textbf{Who:} Doctors, Nurses, Admin
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Visits} --- record OPD/IPD encounters
+    \item \textbf{Vitals} --- temperature, BP, pulse, etc.
+    \item \textbf{Wards} --- bed management for in-patients
+    \item \textbf{Prescriptions} --- issued during visits
+\end{itemize}
+
+%==============================================================================
+\chapter{Billing}
+%==============================================================================
+
+\section{Creating Invoices}
+
+\textbf{Who:} Admin, Receptionist, Accountant
+
+\begin{enumerate}[noitemsep]
+    \item Billing $\rightarrow$ Invoices $\rightarrow$ Create from Visit
+    \item Select a completed visit --- consultation fee and lab items are added automatically
+\end{enumerate}
+
+\section{Recording Payments}
+
+Open an invoice $\rightarrow$ Record Payment. Supported methods: cash, card, online, insurance.
+
+\section{Patient Billing View}
+
+Each patient profile shows their full billing history, totals, and outstanding balance.
+
+\textbf{Patients} can view their own bills via \textbf{My Bills} in the patient portal.
+
+%==============================================================================
+\chapter{Pharmacy}
+%==============================================================================
+
+\textbf{Who:} Pharmacist, Admin
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Inventory} --- drugs, batches, expiry dates
+    \item \textbf{Dispense} --- fulfill prescriptions
+    \item \textbf{Purchase Orders} --- restock from suppliers
+\end{itemize}
+
+Drugs can be bulk-imported via \textbf{Import Data} $\rightarrow$ Pharmacy Drugs.
+
+%==============================================================================
+\chapter{Laboratory}
+%==============================================================================
+
+\textbf{Who:} Lab Technician, Admin
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Test Requests} --- orders from clinical visits
+    \item \textbf{Results} --- enter and publish results
+\end{itemize}
+
+Lab tests can be imported via CSV under \textbf{Import Data}.
+
+%==============================================================================
+\chapter{Human Resources}
+%==============================================================================
+
+\textbf{Who:} Admin (attendance, payroll); All staff (leave)
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Attendance} --- record daily check-in/out
+    \item \textbf{Leave Requests} --- staff submit; admin approves/rejects
+    \item \textbf{Payroll} --- monthly payroll runs
+\end{itemize}
+
+%==============================================================================
+\chapter{Staff Management}
+%==============================================================================
+
+\textbf{Who:} Hospital Admin only
+
+\begin{enumerate}[noitemsep]
+    \item Sidebar $\rightarrow$ \textbf{Staff}
+    \item Click \textbf{Add Staff} --- set username, role, email, password
+    \item Available roles: Doctor, Nurse, Receptionist, Accountant, Pharmacist, Lab Technician
+\end{enumerate}
+
+\begin{warningbox}
+Staff you create belong to \textbf{your hospital only}. They cannot access other hospitals' data. Each staff member signs in with your hospital code at login.
+\end{warningbox}
+
+Staff can also be bulk-imported via \textbf{Import Data} $\rightarrow$ Staff (CSV).
+
+%==============================================================================
+\chapter{Reports}
+%==============================================================================
+
+\textbf{Who:} Admin, Accountant
+
+Available reports include:
+\begin{itemize}[noitemsep]
+    \item Daily OPD summary
+    \item Revenue analysis
+    \item Stock levels
+\end{itemize}
+
+%==============================================================================
+\chapter{Hospital Settings}
+%==============================================================================
+
+\textbf{Who:} Admin
+
+Configure:
+\begin{itemize}[noitemsep]
+    \item Hospital name, address, phone
+    \item Brand colors (primary, accent)
+    \item Tax rate
+    \item Receipt header and footer text
+\end{itemize}
+
+%==============================================================================
+\chapter{Role Quick Reference}
+%==============================================================================
+
+\begin{longtable}{@{}p{3.5cm}p{9cm}@{}}
+\toprule
+\textbf{Role} & \textbf{Main Menu Items} \\
+\midrule
+\endhead
+Admin &
+Dashboard, Import, Patients, Appointments, Clinical, Lab, Pharmacy, Billing, HR, Reports, Staff, Settings \\
+Doctor &
+Dashboard, My Appointments, My Availability, Patients, Visits, Leave \\
+Nurse &
+Dashboard, Patients, Wards, Vitals, Leave \\
+Receptionist &
+Dashboard, Import, Queue, Appointments, Register Patient, Leave \\
+Accountant &
+Dashboard, Invoices, Payments, Reports, Leave \\
+Pharmacist &
+Dashboard, Import, Inventory, Dispense, Purchase Orders, Leave \\
+Lab Technician &
+Dashboard, Import, Test Requests, Results, Leave \\
+Patient &
+Dashboard, My Appointments, My Records, My Bills \\
+\bottomrule
+\end{longtable}
+
+%==============================================================================
+\chapter{Import Data Reference}
+%==============================================================================
+
+\section{Patients CSV (required columns)}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Column} & \textbf{Required} & \textbf{Example} \\
+\midrule
+cnic & Yes & 35201-1234567-1 \\
+first\_name & Yes & Ahmed \\
+last\_name & Yes & Hassan \\
+phone & Yes & 03001234567 \\
+date\_of\_birth & No & 1990-05-15 \\
+gender & No & M / F / O \\
+city & No & Islamabad \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Staff CSV (required columns)}
+
+\texttt{username}, \texttt{first\_name}, \texttt{last\_name}, \texttt{email}, \texttt{role}
+
+Roles: \texttt{doctor}, \texttt{nurse}, \texttt{receptionist}, \texttt{accountant}, \texttt{pharmacist}, \texttt{lab\_tech}
+
+%==============================================================================
+\chapter{Troubleshooting}
+%==============================================================================
+
+\section{I see another hospital's data}
+
+Sign out. Sign in again with \textbf{your hospital code}. Never share the same \texttt{admin} login across hospitals without specifying the code.
+
+\section{No appointment time slots}
+
+\begin{enumerate}[noitemsep]
+    \item Confirm the doctor is \textbf{On Duty}
+    \item Confirm weekly schedule is configured
+    \item Check the selected date is a working day
+\end{enumerate}
+
+\section{Import failed}
+
+\begin{itemize}[noitemsep]
+    \item Use UTF-8 CSV (Excel: Save As $\rightarrow$ CSV UTF-8)
+    \item Match column headers to the sample file
+    \item CNIC must be unique per hospital
+    \item Check error table for row numbers
+\end{itemize}
+
+\section{Module not available}
+
+Your subscription plan may not include that module. Contact platform support to upgrade.
+
+\section{Account suspended}
+
+Your trial or subscription expired. Contact your administrator or platform support.
+
+%==============================================================================
+\chapter{Getting Help}
+%==============================================================================
+
+For technical issues, contact your hospital administrator or CARE-U platform support with:
+\begin{itemize}[noitemsep]
+    \item Your hospital code
+    \item Your role and username
+    \item Steps to reproduce the issue
+    \item Screenshot if applicable
+\end{itemize}
+
+\end{document}

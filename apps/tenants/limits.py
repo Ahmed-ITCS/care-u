@@ -28,6 +28,7 @@ MODULE_LABELS = {
     'users': 'Staff management',
     'notifications': 'Notifications',
     'core': 'Dashboard',
+    'import': 'Import Data',
 }
 
 WEB_NAMESPACE_MODULES = {
@@ -42,6 +43,7 @@ WEB_NAMESPACE_MODULES = {
     'users': 'users',
     'notifications': 'notifications',
     'core': 'core',
+    'import': 'core',
 }
 
 API_SEGMENT_MODULES = {

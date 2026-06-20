@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="gph">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Platform Admin — {{ platform_name }}{% endblock %}</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <link href="{% static 'css/output.css' %}?v={{ static_version }}" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-base-200 min-h-screen font-sans flex flex-col">
+    {% with nav=request.resolver_match.url_name %}
+    <header class="public-navbar">
+        <div class="navbar max-w-7xl mx-auto min-h-[4.5rem]">
+            <div class="flex-1">
+                <a href="{% url 'platform:dashboard' %}" class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/25">
+                        <svg class="w-5 h-5 text-primary-content" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight">Platform Admin</span>
+                </a>
+            </div>
+            <div class="flex-none hidden md:flex items-center gap-1">
+                <a href="{% url 'platform:dashboard' %}" class="btn btn-sm font-medium {% if nav == 'dashboard' %}btn-primary{% else %}btn-ghost{% endif %}">Dashboard</a>
+                <a href="{% url 'platform:hospitals' %}" class="btn btn-sm font-medium {% if nav == 'hospitals' or nav == 'hospital_detail' %}btn-primary{% else %}btn-ghost{% endif %}">Hospitals</a>
+                <a href="{% url 'platform:plans' %}" class="btn btn-sm font-medium {% if nav == 'plans' or nav == 'plan_create' or nav == 'plan_edit' %}btn-primary{% else %}btn-ghost{% endif %}">Plans</a>
+                <a href="{% url 'platform:logout' %}" class="btn btn-ghost btn-sm font-medium">Logout</a>
+            </div>
+            <div class="flex-none md:hidden">
+                <div class="dropdown dropdown-end">
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-square btn-sm">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </div>
+                    <ul tabindex="0" class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow-premium bg-base-100 rounded-xl w-52 border border-base-300/50">
+                        <li><a href="{% url 'platform:dashboard' %}" class="{% if nav == 'dashboard' %}active{% endif %}">Dashboard</a></li>
+                        <li><a href="{% url 'platform:hospitals' %}" class="{% if nav == 'hospitals' or nav == 'hospital_detail' %}active{% endif %}">Hospitals</a></li>
+                        <li><a href="{% url 'platform:plans' %}" class="{% if nav == 'plans' or nav == 'plan_create' or nav == 'plan_edit' %}active{% endif %}">Plans</a></li>
+                        <li class="border-t border-base-300/50 mt-1 pt-1"><a href="{% url 'platform:logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    {% endwith %}
+
+    {% if messages %}
+    <div class="max-w-7xl mx-auto px-4 md:px-8 mt-4 space-y-2 w-full">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} shadow-premium rounded-xl">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="flex-1">{% block content %}{% endblock %}</main>
+
+    <footer class="border-t border-base-300/50 bg-base-100 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-base-content/50">
+            <span>{{ platform_name }} platform administration</span>
+            <a href="{% url 'tenants:landing' %}" class="hover:text-primary transition-colors">Back to public site</a>
+        </div>
+    </footer>
+</body>
+</html>

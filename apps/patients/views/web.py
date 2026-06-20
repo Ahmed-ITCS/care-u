@@ -24,8 +24,24 @@ def patient_list(request):
 
 @login_required
 def patient_detail(request, pk):
+    from django.db.models import Sum
+    from decimal import Decimal
+
     patient = get_object_or_404(Patient, pk=pk)
-    return render(request, 'patients/detail.html', {'patient': patient})
+    invoices = patient.invoices.order_by('-created_at')
+    totals = invoices.aggregate(
+        total_billed=Sum('total_amount'),
+        total_paid=Sum('amount_paid'),
+    )
+    total_billed = totals['total_billed'] or Decimal('0')
+    total_paid = totals['total_paid'] or Decimal('0')
+    return render(request, 'patients/detail.html', {
+        'patient': patient,
+        'invoices': invoices,
+        'total_billed': total_billed,
+        'total_paid': total_paid,
+        'balance_due': total_billed - total_paid,
+    })
 
 
 @login_required

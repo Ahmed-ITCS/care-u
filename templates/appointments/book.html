@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <a href="{% url 'appointments:list' %}" class="btn btn-ghost btn-sm mb-4">&larr; Back</a>
+    <div class="page-header mb-6">
+        <h1>{{ title }}</h1>
+        <p class="text-sm text-base-content/60">Pick a date and doctor — only available time slots will be shown.</p>
+    </div>
+
+    <div class="premium-card p-6 mb-6">
+        <h2 class="text-sm font-semibold mb-3">Doctors on duty</h2>
+        <div id="doctor-status-list" class="space-y-2 text-sm">
+            {% for entry in doctors_status %}
+            <div class="flex items-center justify-between gap-2 py-1 border-b border-base-300/50 last:border-0"
+                 data-doctor-id="{{ entry.doctor.pk }}">
+                <span>Dr. {{ entry.doctor.get_full_name }}
+                    {% if entry.doctor.doctor_profile %}<span class="opacity-50">({{ entry.doctor.doctor_profile.specialty }})</span>{% endif %}
+                </span>
+                <span class="doctor-badge">
+                    {% if not entry.on_duty %}
+                    <span class="badge badge-error badge-sm">Off Duty</span>
+                    {% else %}
+                    <span class="badge badge-success badge-sm">On Duty</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% empty %}
+            <p class="opacity-60">No doctors on duty.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="premium-card p-6">
+        <form method="post" class="space-y-4" id="appointment-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-error text-sm">{{ form.non_field_errors }}</div>
+            {% endif %}
+            {% for field in form %}
+            <div class="form-control" {% if field.name == 'scheduled_time' %}id="time-slot-field"{% endif %}>
+                <label class="label py-1" for="{{ field.id_for_label }}">
+                    <span class="label-text font-medium">
+                        {% if field.name == 'scheduled_time' %}Available time slot{% else %}{{ field.label }}{% endif %}
+                    </span>
+                </label>
+                {{ field }}
+                {% if field.name == 'scheduled_time' %}
+                <p id="slot-hint" class="text-xs text-base-content/50 mt-1">Select doctor and date to load available slots.</p>
+                <p id="slot-empty" class="text-xs text-warning mt-1 hidden"></p>
+                {% endif %}
+                {% if field.errors %}<p class="text-error text-sm mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="flex gap-2 pt-2">
+                <button type="submit" class="btn btn-premium">{% if title == 'Edit Appointment' %}Save{% else %}Book{% endif %}</button>
+                <a href="{% url 'appointments:list' %}" class="btn btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const dateInput = document.getElementById('id_scheduled_date');
+    const doctorInput = document.getElementById('id_doctor');
+    const typeInput = document.getElementById('id_appointment_type');
+    const timeSelect = document.getElementById('id_scheduled_time');
+    const slotHint = document.getElementById('slot-hint');
+    const slotEmpty = document.getElementById('slot-empty');
+    if (!dateInput || !doctorInput || !timeSelect) return;
+
+    const slotsUrl = '{% url "appointments:doctor_slots_api" %}';
+    const excludeId = {{ exclude_appointment_id|default:"null" }};
+    const initialTime = timeSelect.value;
+
+    function loadSlots() {
+        const doctor = doctorInput.value;
+        const date = dateInput.value;
+        if (!doctor || !date) {
+            timeSelect.innerHTML = '<option value="">Select doctor and date first</option>';
+            timeSelect.disabled = true;
+            slotHint.classList.remove('hidden');
+            slotEmpty.classList.add('hidden');
+            return;
+        }
+
+        timeSelect.disabled = true;
+        timeSelect.innerHTML = '<option value="">Loading slots…</option>';
+        slotHint.classList.add('hidden');
+
+        const params = new URLSearchParams({ doctor, date });
+        if (typeInput && typeInput.value) params.set('appointment_type', typeInput.value);
+        if (excludeId) params.set('exclude', excludeId);
+
+        fetch(slotsUrl + '?' + params.toString())
+            .then(r => r.json())
+            .then(data => {
+                if (!data.slots.length) {
+                    timeSelect.innerHTML = '<option value="">No slots available</option>';
+                    timeSelect.disabled = true;
+                    slotEmpty.textContent = data.message || 'No available times on this date.';
+                    slotEmpty.classList.remove('hidden');
+                    return;
+                }
+                slotEmpty.classList.add('hidden');
+                timeSelect.disabled = false;
+                let html = '<option value="">Choose a time slot</option>';
+                data.slots.forEach(s => {
+                    const selected = s.value === initialTime ? ' selected' : '';
+                    html += '<option value="' + s.value + '"' + selected + '>' + s.label + '</option>';
+                });
+                timeSelect.innerHTML = html;
+            });
+    }
+
+    dateInput.addEventListener('change', loadSlots);
+    doctorInput.addEventListener('change', loadSlots);
+    if (typeInput) typeInput.addEventListener('change', loadSlots);
+
+    if (dateInput.value && doctorInput.value) loadSlots();
+})();
+</script>
+{% endblock %}

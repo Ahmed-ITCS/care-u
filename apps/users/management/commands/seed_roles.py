@@ -54,7 +54,7 @@ class Command(BaseCommand):
             if created:
                 user.set_password(password)
                 user.is_staff = role == Role.ADMIN
-                user.is_superuser = role == Role.ADMIN
+                user.is_superuser = False
                 user.save()
                 self.stdout.write(f'Created user: {username} / {password}')
 

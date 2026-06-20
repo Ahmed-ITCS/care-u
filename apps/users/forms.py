@@ -53,7 +53,8 @@ class StaffCreateForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['role'].choices = Role.choices
+        choices = [(r, label) for r, label in Role.choices if r != Role.PATIENT]
+        self.fields['role'].choices = choices
         for field in self.fields.values():
             if 'class' not in field.widget.attrs:
                 field.widget.attrs['class'] = 'input input-bordered w-full'

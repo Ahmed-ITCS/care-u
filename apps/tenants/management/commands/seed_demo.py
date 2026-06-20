@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from datetime import time
 from apps.tenants.sqlite_compat import tenant_schema_context
 
 from apps.tenants.models import Hospital
@@ -98,6 +99,9 @@ class Command(BaseCommand):
             call_command('seed_hospital_data', verbosity=0)
             call_command('seed_roles', verbosity=0)
             self._seed_patients()
+            self._seed_doctor_schedules()
+            self._seed_appointments()
+            self._seed_billing()
 
         call_command('sync_user_index', verbosity=0)
 
@@ -126,6 +130,107 @@ class Command(BaseCommand):
                 created += 1
 
         self.stdout.write(f'  Patients: {created} created, {Patient.objects.count()} total')
+
+    def _seed_doctor_schedules(self):
+        from apps.appointments.models import DoctorSchedule
+        from apps.users.models import Role
+
+        doctor = User.objects.filter(role=Role.DOCTOR).first()
+        if not doctor:
+            return
+
+        profile = getattr(doctor, 'doctor_profile', None)
+        if profile and not profile.is_on_duty:
+            profile.is_on_duty = True
+            profile.save(update_fields=['is_on_duty', 'updated_at'])
+
+        slots = [
+            (0, time(9, 0), time(13, 0)),
+            (0, time(14, 0), time(17, 0)),
+            (1, time(9, 0), time(17, 0)),
+            (2, time(9, 0), time(17, 0)),
+            (3, time(9, 0), time(17, 0)),
+            (4, time(9, 0), time(13, 0)),
+        ]
+        created = 0
+        for day, start, end in slots:
+            _, was_created = DoctorSchedule.objects.get_or_create(
+                doctor=doctor,
+                day_of_week=day,
+                start_time=start,
+                defaults={'end_time': end, 'slot_duration': 15, 'is_active': True},
+            )
+            if was_created:
+                created += 1
+        self.stdout.write(f'  Doctor schedules: {created} created, {DoctorSchedule.objects.filter(doctor=doctor).count()} total')
+
+    def _seed_appointments(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from apps.appointments.models import Appointment, AppointmentType
+        from apps.patients.models import Patient
+        from apps.users.models import Role
+
+        doctor = User.objects.filter(role=Role.DOCTOR).first()
+        receptionist = User.objects.filter(role=Role.RECEPTIONIST).first()
+        appt_type = AppointmentType.objects.filter(code='OPD').first()
+        patients = list(Patient.objects.all()[:3])
+        if not (doctor and receptionist and appt_type and patients):
+            return
+
+        today = timezone.now().date()
+        slots = [time(10, 0), time(11, 0), time(14, 30)]
+        created = 0
+        for i, patient in enumerate(patients):
+            appt_date = today + timedelta(days=i)
+            appt_time = slots[i % len(slots)]
+            _, was_created = Appointment.objects.get_or_create(
+                patient=patient,
+                doctor=doctor,
+                scheduled_date=appt_date,
+                scheduled_time=appt_time,
+                defaults={
+                    'appointment_type': appt_type,
+                    'status': 'scheduled',
+                    'source': 'walk_in',
+                    'booked_by': receptionist,
+                    'reason': 'Routine checkup',
+                },
+            )
+            if was_created:
+                created += 1
+        self.stdout.write(f'  Appointments: {created} created, {Appointment.objects.count()} total')
+
+    def _seed_billing(self):
+        from apps.billing.models import Invoice
+        from apps.billing.services import create_invoice_from_visit, record_payment
+        from apps.clinical.models import Visit
+        from apps.patients.models import Patient
+        from apps.users.models import Role
+
+        doctor = User.objects.filter(role=Role.DOCTOR).first()
+        receptionist = User.objects.filter(role=Role.RECEPTIONIST).first()
+        patients = list(Patient.objects.all()[:3])
+        if not (doctor and receptionist and patients):
+            return
+
+        created = 0
+        for patient in patients:
+            visit, visit_created = Visit.objects.get_or_create(
+                patient=patient,
+                doctor=doctor,
+                visit_type='opd',
+                defaults={'status': 'completed', 'notes': 'General consultation'},
+            )
+            if not Invoice.objects.filter(visit=visit).exists():
+                invoice = create_invoice_from_visit(visit.id, receptionist)
+                created += 1
+                if patient == patients[0]:
+                    record_payment(invoice, invoice.total_amount, 'cash', receptionist)
+                elif patient == patients[1]:
+                    record_payment(invoice, invoice.total_amount / 2, 'cash', receptionist)
+
+        self.stdout.write(f'  Invoices: {created} created, {Invoice.objects.count()} total')
 
     def _print_summary(self, hospital):
         from django.conf import settings

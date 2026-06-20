@@ -1,28 +1,49 @@
-{% extends "tenants/base_public.html" %}
+{% extends "tenants/platform/base_platform.html" %}
 {% block title %}All Hospitals{% endblock %}
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold text-primary mb-6">All Hospitals</h1>
-    <div class="flex gap-2 mb-4">
+<div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="page-header mb-8">
+        <h1>All Hospitals</h1>
+        <p>Filter and manage registered tenants</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-6">
         <a href="?" class="btn btn-sm {% if not request.GET.status %}btn-primary{% else %}btn-ghost{% endif %}">All</a>
         <a href="?status=active" class="btn btn-sm {% if request.GET.status == 'active' %}btn-primary{% else %}btn-ghost{% endif %}">Active</a>
         <a href="?status=trial" class="btn btn-sm {% if request.GET.status == 'trial' %}btn-primary{% else %}btn-ghost{% endif %}">Trial</a>
         <a href="?status=suspended" class="btn btn-sm {% if request.GET.status == 'suspended' %}btn-primary{% else %}btn-ghost{% endif %}">Suspended</a>
     </div>
-    <div class="overflow-x-auto">
-        <table class="table table-zebra bg-base-100 shadow">
-            <thead><tr><th>Name</th><th>Subdomain</th><th>Plan</th><th>Status</th><th>Paid until</th><th>Created</th><th></th></tr></thead>
+
+    <div class="premium-card overflow-x-auto">
+        <table class="table premium-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Subdomain</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Paid until</th>
+                    <th>Created</th>
+                    <th></th>
+                </tr>
+            </thead>
             <tbody>
                 {% for h in hospitals %}
                 <tr>
-                    <td>{{ h.name }}</td>
-                    <td class="font-mono">{{ h.subdomain }}</td>
-                    <td>{{ h.plan.display_name|default:"—" }}</td>
-                    <td><span class="badge">{{ h.get_status_display }}</span></td>
+                    <td class="font-medium">{{ h.name }}</td>
+                    <td class="font-mono text-sm text-base-content/60">{{ h.subdomain }}</td>
+                    <td>{% if h.plan %}{{ h.plan.display_name }}{% else %}—{% endif %}</td>
+                    <td>
+                        <span class="badge badge-sm {% if h.status == 'active' %}badge-success{% elif h.status == 'trial' %}badge-warning{% elif h.status == 'suspended' %}badge-error{% else %}badge-ghost{% endif %}">
+                            {{ h.get_status_display }}
+                        </span>
+                    </td>
                     <td>{{ h.paid_until|date:"M d, Y"|default:"—" }}</td>
                     <td>{{ h.created_at|date:"M d, Y" }}</td>
-                    <td><a href="{% url 'platform:hospital_detail' h.pk %}" class="btn btn-ghost btn-xs">Manage</a></td>
+                    <td><a href="{% url 'platform:hospital_detail' h.pk %}" class="btn btn-ghost btn-xs text-primary">Manage →</a></td>
                 </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-16 text-base-content/40">No hospitals match this filter.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

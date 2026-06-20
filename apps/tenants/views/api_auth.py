@@ -28,14 +28,19 @@ def unified_api_login(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    result = resolve_tenant_and_authenticate(
+    hospital, user, error = resolve_tenant_and_authenticate(
         serializer.validated_data['username'],
         serializer.validated_data['password'],
+        hospital_subdomain=request.data.get('hospital') or request.data.get('tenant'),
     )
-    if not result:
+    if error == 'ambiguous':
+        return Response(
+            {'detail': 'Multiple hospitals match. Pass hospital (subdomain) in the request body.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    if not hospital or not user:
         return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    hospital, user = result
     with tenant_schema_context(hospital.schema_name):
         refresh = RefreshToken.for_user(user)
         refresh['tenant_subdomain'] = hospital.subdomain

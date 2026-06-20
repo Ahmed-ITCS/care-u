@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods
 from apps.tenants.models import Hospital, PlatformUser, SubscriptionPlan
 from apps.tenants.services import create_hospital_tenant, get_tenant_usage_stats
 from apps.tenants.decorators import platform_admin_required
-from apps.tenants.auth import resolve_tenant_and_authenticate
+from apps.tenants.auth import resolve_tenant_and_authenticate, admin_email_taken
 
 
 def landing(request):
@@ -21,11 +21,21 @@ def landing(request):
 def hospital_register(request):
     """Hospital sign-up — creates tenant schema automatically."""
     if request.method == 'POST':
+        admin_email = request.POST.get('admin_email', '').strip()
+        if admin_email_taken(admin_email):
+            messages.error(
+                request,
+                'An account with this email already exists. Sign in with that email, '
+                'or register using a different admin email.',
+            )
+            plans = SubscriptionPlan.objects.filter(is_active=True)
+            return render(request, 'tenants/register.html', {'plans': plans})
+
         data = {
             'hospital_name': request.POST.get('hospital_name', '').strip(),
             'subdomain': request.POST.get('subdomain', '').strip().lower(),
             'admin_name': request.POST.get('admin_name', '').strip(),
-            'admin_email': request.POST.get('admin_email', '').strip(),
+            'admin_email': admin_email,
             'admin_phone': request.POST.get('admin_phone', '').strip(),
             'admin_username': request.POST.get('admin_username', '').strip(),
             'admin_password': request.POST.get('admin_password', ''),
@@ -72,9 +82,11 @@ def unified_login(request):
     if request.method == 'POST':
         identifier = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
-        result = resolve_tenant_and_authenticate(identifier, password)
-        if result:
-            hospital, user = result
+        hospital_code = request.POST.get('hospital_code', '').strip().lower()
+        hospital, user, error = resolve_tenant_and_authenticate(
+            identifier, password, hospital_subdomain=hospital_code or None,
+        )
+        if hospital and user:
             backend = 'django.contrib.auth.backends.ModelBackend'
             request.session[SESSION_KEY] = user.pk
             request.session[BACKEND_SESSION_KEY] = backend
@@ -83,7 +95,16 @@ def unified_login(request):
             request.session['tenant_schema'] = hospital.schema_name
             request.session.modified = True
             return redirect(f'/h/{hospital.subdomain}/')
-        messages.error(request, 'Invalid username/email or password.')
+        if error == 'ambiguous':
+            messages.error(
+                request,
+                'This username exists at more than one hospital. '
+                'Enter your hospital code (subdomain from registration, e.g. my-clinic) or sign in with your email.',
+            )
+        elif error == 'invalid_hospital':
+            messages.error(request, 'Hospital code not found. Check the code from your registration email or page.')
+        else:
+            messages.error(request, 'Invalid username/email, password, or hospital code.')
 
     return render(request, 'tenants/unified_login.html')
 

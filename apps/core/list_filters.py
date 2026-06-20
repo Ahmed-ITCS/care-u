@@ -7,7 +7,8 @@ FILTER_SEARCH = 'filter-input filter-input-search input input-bordered input-sm 
 FILTER_CHECKBOX = 'filter-checkbox checkbox checkbox-primary checkbox-sm'
 
 
-def style_filter_form(form):
+def style_filter_form(form, filter_class=None):
+    search_placeholder = getattr(filter_class, 'search_placeholder', 'Name, MR number, CNIC, phone...')
     for field in form.fields.values():
         widget = field.widget
         if isinstance(widget, forms.CheckboxInput):
@@ -16,7 +17,7 @@ def style_filter_form(form):
             widget.attrs.setdefault('class', FILTER_SELECT)
         elif field.label in ('Search', 'Patient'):
             widget.attrs.setdefault('class', FILTER_SEARCH)
-            widget.attrs.setdefault('placeholder', 'Name, MR number, CNIC, phone…')
+            widget.attrs.setdefault('placeholder', search_placeholder)
         else:
             widget.attrs.setdefault('class', FILTER_INPUT)
             if not widget.attrs.get('placeholder') and field.label:
@@ -64,7 +65,7 @@ def apply_list_filters(request, queryset, filter_class, limit=None, exclude_fiel
     qs = filter_set.qs
     if limit is not None:
         qs = qs[:limit]
-    form = style_filter_form(filter_set.form)
+    form = style_filter_form(filter_set.form, filter_class=filter_class)
     for name in exclude_fields:
         form.fields.pop(name, None)
     layout = _layout_for(filter_class)

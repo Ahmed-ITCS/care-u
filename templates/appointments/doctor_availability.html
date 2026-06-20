@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}My Availability — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-primary">My Availability</h1>
+    <p class="text-base-content/60">Control your on-duty status and working hours shown during appointment booking.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-base">Duty Status</h2>
+            <p class="text-sm opacity-70 mb-4">
+                When off duty, reception cannot book appointments with you.
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_duty">
+                {% if profile.is_on_duty %}
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="badge badge-success badge-lg">On Duty</span>
+                    <span class="text-sm">Patients can book with you.</span>
+                </div>
+                <button type="submit" class="btn btn-error btn-outline">Go Off Duty</button>
+                {% else %}
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="badge badge-error badge-lg">Off Duty</span>
+                    <span class="text-sm">You are hidden from booking.</span>
+                </div>
+                <button type="submit" class="btn btn-success">Go On Duty</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-base">Add Weekly Slot</h2>
+            <form method="post" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_schedule">
+                {% for field in schedule_form %}
+                <div class="form-control">
+                    <label class="label py-0" for="{{ field.id_for_label }}">
+                        <span class="label-text text-sm">{{ field.label }}</span>
+                    </label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-premium btn-sm">Add Slot</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card bg-base-100 shadow mt-6">
+    <div class="card-body p-0">
+        <h2 class="card-title text-base px-6 pt-6">Weekly Schedule</h2>
+        <table class="table table-zebra">
+            <thead><tr><th>Day</th><th>Start</th><th>End</th><th>Slot (min)</th><th>Active</th><th></th></tr></thead>
+            <tbody>
+                {% for s in schedules %}
+                <tr>
+                    <td>{{ s.get_day_of_week_display }}</td>
+                    <td>{{ s.start_time|time:"H:i" }}</td>
+                    <td>{{ s.end_time|time:"H:i" }}</td>
+                    <td>{{ s.slot_duration }}</td>
+                    <td>{% if s.is_active %}<span class="badge badge-success badge-sm">Yes</span>{% else %}<span class="badge badge-ghost badge-sm">No</span>{% endif %}</td>
+                    <td>
+                        <form method="post" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete_schedule">
+                            <input type="hidden" name="schedule_id" value="{{ s.pk }}">
+                            <button type="submit" class="btn btn-ghost btn-xs text-error">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-6 opacity-60">No schedule set — add working hours above</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-base">Date Exception</h2>
+            <p class="text-sm opacity-70 mb-3">Block a specific day or set custom hours (leave, conference, etc.).</p>
+            <form method="post" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_exception">
+                {% for field in exception_form %}
+                <div class="form-control">
+                    <label class="label py-0" for="{{ field.id_for_label }}">
+                        <span class="label-text text-sm">{{ field.label }}</span>
+                    </label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-premium btn-sm">Save Exception</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <h2 class="card-title text-base px-6 pt-6">Upcoming Exceptions</h2>
+            <table class="table table-zebra">
+                <thead><tr><th>Date</th><th>Status</th><th>Reason</th><th></th></tr></thead>
+                <tbody>
+                    {% for ex in exceptions %}
+                    <tr>
+                        <td>{{ ex.date }}</td>
+                        <td>{% if ex.is_available %}<span class="badge badge-success badge-sm">Available</span>{% else %}<span class="badge badge-error badge-sm">Blocked</span>{% endif %}</td>
+                        <td>{{ ex.reason|default:"—" }}</td>
+                        <td>
+                            <form method="post" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_exception">
+                                <input type="hidden" name="exception_id" value="{{ ex.pk }}">
+                                <button type="submit" class="btn btn-ghost btn-xs text-error">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center py-6 opacity-60">No upcoming exceptions</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

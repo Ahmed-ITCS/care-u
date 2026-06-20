@@ -66,6 +66,10 @@ class DoctorProfile(TimeStampedModel):
     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     bio = models.TextField(blank=True)
     consultation_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_on_duty = models.BooleanField(
+        default=True,
+        help_text='When off duty, doctor is hidden from appointment booking.',
+    )
 
     def __str__(self):
         return f'Dr. {self.user.get_full_name()} - {self.specialty}'

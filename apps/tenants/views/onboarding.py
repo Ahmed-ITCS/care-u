@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
+
+from apps.hr.decorators import admin_required
 from apps.tenants.middleware import ensure_request_tenant
 from apps.tenants.services import run_tenant_onboarding
 
@@ -49,13 +51,10 @@ def onboarding_wizard(request):
 
 
 @login_required
+@admin_required
 def hospital_settings(request):
     """Hospital admin: customize branding and settings."""
     tenant = ensure_request_tenant(request)
-    if request.user.role != 'admin':
-        messages.error(request, 'Access denied.')
-        return redirect('core:dashboard')
-
     if request.method == 'POST':
         from apps.core.models import HospitalConfig
         config = HospitalConfig.load()

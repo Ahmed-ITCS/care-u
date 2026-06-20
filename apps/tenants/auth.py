@@ -29,36 +29,77 @@ def resolve_hospital_instance(tenant_or_hospital):
         return Hospital.objects.filter(schema_name=schema_name).first()
 
 
-def resolve_tenant_and_authenticate(identifier, password):
-    """
-    Given username or email + password, find the hospital and authenticate the user.
-    Returns (hospital, user) or None.
-    """
-    from apps.tenants.models import TenantUserIndex
+def _index_candidates(identifier, hospital_subdomain=None):
+    from apps.tenants.models import Hospital, TenantUserIndex
 
     identifier = (identifier or '').strip()
-    if not identifier or not password:
-        return None
+    subdomain = (hospital_subdomain or '').strip().lower()
 
     with tenant_schema_context(get_public_schema_name()):
-        qs = TenantUserIndex.objects.filter(is_active=True).select_related('hospital')
-        if '@' in identifier:
-            entries = qs.filter(email__iexact=identifier)
+        if subdomain:
+            hospital = Hospital.objects.filter(subdomain=subdomain).first()
+            if not hospital:
+                return [], 'invalid_hospital'
+            qs = TenantUserIndex.objects.filter(
+                is_active=True, hospital=hospital,
+            ).select_related('hospital')
         else:
-            entries = qs.filter(username__iexact=identifier)
+            qs = TenantUserIndex.objects.filter(is_active=True).select_related('hospital')
 
-        candidates = list(entries)
+        if '@' in identifier:
+            entries = list(qs.filter(email__iexact=identifier))
+        else:
+            entries = list(qs.filter(username__iexact=identifier))
 
-    for entry in candidates:
+    return entries, None
+
+
+def resolve_tenant_and_authenticate(identifier, password, hospital_subdomain=None):
+    """
+    Given username or email + password, find the hospital and authenticate the user.
+    Returns (hospital, user, error_code) where error_code is None on success.
+    """
+    identifier = (identifier or '').strip()
+    if not identifier or not password:
+        return None, None, 'invalid'
+
+    entries, lookup_error = _index_candidates(identifier, hospital_subdomain)
+    if lookup_error:
+        return None, None, lookup_error
+    if not entries:
+        return None, None, 'invalid'
+
+    matches = []
+    for entry in entries:
         hospital = entry.hospital
         if hospital.schema_name == 'public' or not hospital.is_active_tenant:
             continue
         with tenant_schema_context(hospital.schema_name):
             user = authenticate(username=entry.username, password=password)
             if user and user.is_active:
-                return hospital, user
+                matches.append((hospital, user))
 
-    return None
+    if len(matches) == 1:
+        return matches[0][0], matches[0][1], None
+    if len(matches) > 1:
+        return None, None, 'ambiguous'
+    return None, None, 'invalid'
+
+
+def admin_email_taken(email, exclude_hospital=None):
+    """True if another hospital already registered this admin email."""
+    from apps.tenants.models import TenantUserIndex
+
+    email = (email or '').strip().lower()
+    if not email:
+        return False
+    with tenant_schema_context(get_public_schema_name()):
+        qs = TenantUserIndex.objects.filter(email__iexact=email)
+        if exclude_hospital:
+            hospital = resolve_hospital_instance(exclude_hospital)
+            if hospital:
+                qs = qs.exclude(hospital=hospital)
+        return qs.exists()
 
 
 def sync_user_to_index(hospital, user):

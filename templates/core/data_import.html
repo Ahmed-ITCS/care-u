@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Import Data — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="page-header mb-6">
+    <h1>Import Data</h1>
+    <p class="text-base-content/60">Upload a CSV file to bulk-import records. Download a sample file first to see the exact column format.</p>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+    <!-- Type selector -->
+    <div class="xl:col-span-3">
+        <div class="premium-card p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50 mb-3">What are you importing?</p>
+            <ul class="menu menu-sm p-0 gap-1">
+                {% for tab in import_tabs %}
+                <li>
+                    <a href="?type={{ tab.key }}"
+                       class="rounded-xl {% if tab.key == active_type %}active bg-primary text-primary-content{% endif %}">
+                        {% include "partials/nav_icon.html" with icon=tab.icon %}
+                        {{ tab.label }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="alert alert-info mt-4 text-sm shadow-premium rounded-xl">
+            <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+                <p class="font-medium">Tips</p>
+                <ul class="list-disc list-inside mt-1 opacity-90 text-xs space-y-1">
+                    <li>First row must be column headers</li>
+                    <li>Use UTF-8 encoding (Excel: Save As → CSV UTF-8)</li>
+                    <li>Column names are flexible — <code class="text-xs">first_name</code> or <code class="text-xs">First Name</code> both work</li>
+                    <li>Max file size: 5 MB</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main panel -->
+    <div class="xl:col-span-9 space-y-6">
+        <div class="premium-card p-6">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold">{{ active_schema.label }}</h2>
+                    <p class="text-sm text-base-content/60 mt-1">{{ active_schema.description }}</p>
+                </div>
+                <a href="{% url 'core:data_import_sample' active_type %}" class="btn btn-outline btn-sm gap-2 shrink-0">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Download sample CSV
+                </a>
+            </div>
+
+            <!-- Column guide -->
+            <div class="mb-6">
+                <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                    Prepare your CSV — column guide
+                </h3>
+                <div class="overflow-x-auto rounded-xl border border-base-300/60">
+                    <table class="table table-sm">
+                        <thead class="bg-base-200/80">
+                            <tr>
+                                <th>Column header</th>
+                                <th>Required</th>
+                                <th>Example</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col in active_schema.columns %}
+                            <tr>
+                                <td><code class="text-xs bg-base-200 px-2 py-1 rounded font-mono">{{ col.key }}</code></td>
+                                <td>
+                                    {% if col.required %}
+                                    <span class="badge badge-error badge-xs">Required</span>
+                                    {% else %}
+                                    <span class="badge badge-ghost badge-xs">Optional</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-sm font-mono opacity-80">{{ col.example }}</td>
+                                <td class="text-xs text-base-content/60">{{ col.hint }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sample preview -->
+            {% if active_schema.sample_rows %}
+            <details class="mb-6 group">
+                <summary class="text-sm font-semibold cursor-pointer flex items-center gap-2 list-none">
+                    <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
+                    Preview sample data
+                    <svg class="w-4 h-4 opacity-50 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </summary>
+                <div class="overflow-x-auto mt-3 rounded-xl border border-base-300/60">
+                    <table class="table table-xs">
+                        <thead class="bg-base-200/80">
+                            <tr>
+                                {% for col in active_schema.columns %}
+                                <th class="font-mono">{{ col.key }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in active_schema.preview_matrix %}
+                            <tr>
+                                {% for cell in row %}
+                                <td class="font-mono text-xs">{{ cell }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+            {% endif %}
+
+            <!-- Upload form -->
+            <div>
+                <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{% if active_schema.sample_rows %}3{% else %}2{% endif %}</span>
+                    Upload your file
+                </h3>
+                <form method="post" enctype="multipart/form-data" class="border-2 border-dashed border-base-300 rounded-2xl p-8 bg-base-200/30">
+                    {% csrf_token %}
+                    <input type="hidden" name="import_type" value="{{ active_type }}">
+                    <div class="flex flex-col items-center text-center gap-4 max-w-md mx-auto">
+                        <div class="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        </div>
+                        <div>
+                            <label for="id_csv_file" class="btn btn-premium btn-sm cursor-pointer">Choose CSV file</label>
+                            <input type="file" name="csv_file" id="id_csv_file" accept=".csv" class="hidden" required>
+                            <p id="file-name" class="text-sm text-base-content/50 mt-2">No file selected</p>
+                        </div>
+                        {% if form.csv_file.errors %}
+                        <p class="text-error text-sm">{{ form.csv_file.errors.0 }}</p>
+                        {% endif %}
+                        <button type="submit" class="btn btn-premium w-full sm:w-auto">Import {{ active_schema.label }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if result %}
+        <div class="premium-card p-6">
+            <h3 class="text-sm font-semibold mb-4">Import results</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                <div class="stat bg-success/10 rounded-xl p-4">
+                    <div class="stat-title text-xs">Created</div>
+                    <div class="stat-value text-lg text-success">{{ result.created }}</div>
+                </div>
+                <div class="stat bg-info/10 rounded-xl p-4">
+                    <div class="stat-title text-xs">Updated</div>
+                    <div class="stat-value text-lg text-info">{{ result.updated }}</div>
+                </div>
+                <div class="stat bg-warning/10 rounded-xl p-4">
+                    <div class="stat-title text-xs">Skipped</div>
+                    <div class="stat-value text-lg text-warning">{{ result.skipped }}</div>
+                </div>
+                <div class="stat bg-error/10 rounded-xl p-4">
+                    <div class="stat-title text-xs">Errors</div>
+                    <div class="stat-value text-lg text-error">{{ result.errors|length }}</div>
+                </div>
+            </div>
+            {% if result.errors %}
+            <div class="overflow-x-auto rounded-xl border border-error/20">
+                <table class="table table-sm">
+                    <thead><tr><th>Row</th><th>Issue</th></tr></thead>
+                    <tbody>
+                        {% for err in result.errors %}
+                        <tr><td class="font-mono">{{ err.row }}</td><td class="text-sm">{{ err.message }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('id_csv_file')?.addEventListener('change', function () {
+    const label = document.getElementById('file-name');
+    if (label) label.textContent = this.files[0]?.name || 'No file selected';
+});
+</script>
+{% endblock %}

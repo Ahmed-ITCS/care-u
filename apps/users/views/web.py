@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 
-from apps.core.permissions import IsAdmin
+from apps.hr.decorators import admin_required
 from apps.core.list_filters import filter_list_context
 from apps.tenants.limits import check_staff_limit, SubscriptionLimitExceeded
 from apps.users.filters import StaffUserFilter
@@ -118,10 +118,8 @@ def password_reset_confirm(request):
 
 
 @login_required
+@admin_required
 def staff_list(request):
-    if request.user.role != 'admin':
-        messages.error(request, 'Access denied')
-        return redirect('core:dashboard')
     queryset = User.objects.exclude(role='patient').select_related('staff_profile', 'doctor_profile')
     ctx = filter_list_context(
         request, queryset, StaffUserFilter, limit=100, clear_url=reverse('users:staff_list'),
@@ -131,10 +129,8 @@ def staff_list(request):
 
 
 @login_required
+@admin_required
 def staff_create(request):
-    if request.user.role != 'admin':
-        messages.error(request, 'Access denied')
-        return redirect('core:dashboard')
     if request.method == 'POST':
         form = StaffCreateForm(request.POST)
         if form.is_valid():
@@ -152,10 +148,8 @@ def staff_create(request):
 
 
 @login_required
+@admin_required
 def staff_edit(request, pk):
-    if request.user.role != 'admin':
-        messages.error(request, 'Access denied')
-        return redirect('core:dashboard')
     user = get_object_or_404(User, pk=pk)
     if user.role == 'patient':
         messages.error(request, 'Cannot edit patient accounts here.')

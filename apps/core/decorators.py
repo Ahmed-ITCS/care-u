@@ -19,3 +19,16 @@ def roles_required(*roles):
         return wrapper
 
     return decorator
+
+
+def owner_required(view_func):
+    """Hospital owner only (is_superuser — created at registration)."""
+
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            messages.error(request, 'Hospital owner access required.')
+            return redirect('core:dashboard')
+        return view_func(request, *args, **kwargs)
+
+    return wrapper

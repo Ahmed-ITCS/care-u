@@ -4,7 +4,7 @@
 <div class="page-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
     <div>
         <h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
-        <p>{{ user.get_role_display|default:user.role }} · {% now "l, F j, Y" %}</p>
+        <p>{{ role_label|default:user.get_role_display }} · {% now "l, F j, Y" %}</p>
     </div>
     {% if role == 'admin' or role == 'receptionist' %}
     <a href="{% url 'patients:register' %}" class="btn btn-premium btn-sm">

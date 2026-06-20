@@ -1,36 +1,64 @@
-{% extends "tenants/base_public.html" %}
+{% extends "tenants/platform/base_platform.html" %}
 {% block title %}{{ hospital.name }} — Platform Admin{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto px-6 py-10">
-    <a href="{% url 'platform:dashboard' %}" class="btn btn-ghost btn-sm mb-6">&larr; Back to dashboard</a>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <a href="{% url 'platform:dashboard' %}" class="btn btn-ghost btn-sm w-fit">&larr; Back to dashboard</a>
+        <a href="/h/{{ hospital.subdomain }}/" target="_blank" rel="noopener" class="btn btn-outline btn-sm w-fit">
+            Open hospital workspace ↗
+        </a>
+    </div>
 
     <div class="page-header mb-8">
-        <h1>{{ hospital.name }}</h1>
-        <p class="font-mono text-sm">/h/{{ hospital.subdomain }}/</p>
+        <div class="flex flex-wrap items-center gap-3">
+            <h1>{{ hospital.name }}</h1>
+            <span class="badge badge-sm {% if hospital.status == 'active' %}badge-success{% elif hospital.status == 'trial' %}badge-warning{% elif hospital.status == 'suspended' %}badge-error{% else %}badge-ghost{% endif %}">
+                {{ hospital.get_status_display }}
+            </span>
+        </div>
+        <p class="font-mono text-sm mt-1">
+            <a href="/h/{{ hospital.subdomain }}/" target="_blank" rel="noopener" class="link link-primary">/h/{{ hospital.subdomain }}/</a>
+        </p>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="stat-card">
             <p class="text-sm text-base-content/50">Patients</p>
-            <p class="text-2xl font-bold mt-1">{{ stats.patients }}{% if limits.patients_limit %}<span class="text-base font-normal text-base-content/40"> / {{ limits.patients_limit }}</span>{% endif %}</p>
+            <p class="text-2xl font-bold mt-1">
+                {{ stats.patients }}{% if limits.patients_limit %}<span class="text-base font-normal {% if stats.patients > limits.patients_limit %}text-error{% else %}text-base-content/40{% endif %}"> / {{ limits.patients_limit }}</span>{% endif %}
+            </p>
         </div>
-        <div class="stat-card"><p class="text-sm text-base-content/50">Appointments</p><p class="text-2xl font-bold mt-1">{{ stats.appointments }}</p></div>
+        <div class="stat-card">
+            <p class="text-sm text-base-content/50">Appointments</p>
+            <p class="text-2xl font-bold mt-1">{{ stats.appointments }}</p>
+        </div>
         <div class="stat-card">
             <p class="text-sm text-base-content/50">Staff</p>
-            <p class="text-2xl font-bold mt-1">{{ stats.staff }}{% if limits.staff_limit %}<span class="text-base font-normal text-base-content/40"> / {{ limits.staff_limit }}</span>{% endif %}</p>
+            <p class="text-2xl font-bold mt-1">
+                {{ stats.staff }}{% if limits.staff_limit %}<span class="text-base font-normal {% if stats.staff > limits.staff_limit %}text-error{% else %}text-base-content/40{% endif %}"> / {{ limits.staff_limit }}</span>{% endif %}
+            </p>
         </div>
-        <div class="stat-card"><p class="text-sm text-base-content/50">Invoices</p><p class="text-2xl font-bold mt-1">{{ stats.invoices }}</p></div>
+        <div class="stat-card">
+            <p class="text-sm text-base-content/50">Invoices</p>
+            <p class="text-2xl font-bold mt-1">{{ stats.invoices }}</p>
+        </div>
     </div>
 
+    {% if limits.staff_limit and stats.staff > limits.staff_limit or limits.patients_limit and stats.patients > limits.patients_limit %}
+    <div class="alert alert-warning shadow-premium rounded-xl mb-6">
+        This hospital is over its plan limits. Consider upgrading the subscription.
+    </div>
+    {% endif %}
+
     <!-- Subscription -->
-    <div class="premium-card mb-6">
+    <div class="premium-card p-6 mb-6">
         <h2 class="text-lg font-bold mb-1">Subscription</h2>
-        <p class="text-sm text-base-content/50 mb-6">Upgrade or extend this client's plan after payment — no shell required.</p>
+        <p class="text-sm text-base-content/50 mb-6">Upgrade or extend this client's plan after payment.</p>
 
         <div class="grid sm:grid-cols-2 gap-4 mb-6 text-sm">
             <div>
                 <p class="text-base-content/50">Current plan</p>
-                <p class="font-semibold">{{ hospital.plan.display_name|default:"No plan" }}</p>
+                <p class="font-semibold">{% if hospital.plan %}{{ hospital.plan.display_name }}{% else %}No plan{% endif %}</p>
             </div>
             <div>
                 <p class="text-base-content/50">Modules</p>
@@ -58,6 +86,7 @@
             {% endif %}
         </div>
 
+        {% if plans %}
         <form method="post" action="{% url 'platform:hospital_action' hospital.pk %}" class="space-y-4 border-t border-base-300/50 pt-6">
             {% csrf_token %}
             <input type="hidden" name="action" value="upgrade">
@@ -67,7 +96,7 @@
                     <select name="plan_id" class="select select-bordered w-full" required>
                         {% for plan in plans %}
                         <option value="{{ plan.pk }}" {% if hospital.plan_id == plan.pk %}selected{% endif %}>
-                            {{ plan.display_name }} — PKR {{ plan.price_monthly|floatformat:0 }}/mo
+                            {{ plan.display_name }} — {{ plan.max_users }} staff, {{ plan.max_patients }} patients
                         </option>
                         {% endfor %}
                     </select>
@@ -79,6 +108,11 @@
             </div>
             <button type="submit" class="btn btn-premium">Save subscription</button>
         </form>
+        {% else %}
+        <div class="alert alert-info text-sm border-t border-base-300/50 pt-6 mt-0 rounded-xl">
+            No active plans available. <a href="{% url 'platform:plans' %}" class="link link-primary">Create a plan</a> first.
+        </div>
+        {% endif %}
 
         <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-base-300/50">
             <span class="text-sm text-base-content/50 self-center mr-2">Quick extend:</span>
@@ -104,7 +138,7 @@
     </div>
 
     <!-- Details -->
-    <div class="premium-card mb-6">
+    <div class="premium-card p-6 mb-6">
         <h2 class="text-lg font-bold mb-4">Details</h2>
         <dl class="grid sm:grid-cols-2 gap-3 text-sm">
             <div><dt class="text-base-content/50">Schema</dt><dd class="font-mono">{{ hospital.schema_name }}</dd></div>
@@ -115,7 +149,7 @@
     </div>
 
     <!-- Status actions -->
-    <div class="premium-card">
+    <div class="premium-card p-6">
         <h2 class="text-lg font-bold mb-4">Access control</h2>
         <form method="post" action="{% url 'platform:hospital_action' hospital.pk %}">
             {% csrf_token %}

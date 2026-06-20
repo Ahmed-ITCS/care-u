@@ -4,8 +4,8 @@
 <div class="max-w-7xl mx-auto px-6 py-20">
     <div class="text-center mb-16">
         <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Pricing</p>
-        <h1 class="text-3xl md:text-5xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
-        <p class="text-base-content/60 mt-4 max-w-xl mx-auto">All plans include full ERP access. Upgrade as your hospital grows. Prices in PKR.</p>
+        <h1 class="text-3xl md:text-5xl font-bold tracking-tight">Plans for Every Hospital</h1>
+        <p class="text-base-content/60 mt-4 max-w-xl mx-auto">All plans include full ERP access. Upgrade as your hospital grows.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -14,18 +14,12 @@
             {% if plan.name == 'premium' %}
             <div class="badge badge-primary badge-sm mb-4">Most Popular</div>
             {% elif plan.name == 'trial' %}
-            <div class="badge badge-ghost badge-sm mb-4">14 days free</div>
+            <div class="badge badge-ghost badge-sm mb-4">14-day trial</div>
             {% else %}
             <div class="h-6 mb-4"></div>
             {% endif %}
             <h2 class="text-xl font-bold">{{ plan.display_name }}</h2>
-            <div class="my-6">
-                {% if plan.price_monthly == 0 %}
-                <p class="text-4xl font-extrabold text-primary">Free</p>
-                {% else %}
-                <p class="text-4xl font-extrabold text-primary">PKR {{ plan.price_monthly|floatformat:0 }}<span class="text-base font-normal text-base-content/50">/mo</span></p>
-                {% endif %}
-            </div>
+            <p class="text-sm text-base-content/60 mt-2 mb-6">{{ plan.module_labels }}</p>
             <ul class="text-sm space-y-3 text-base-content/70 text-left mb-8">
                 <li class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -34,10 +28,6 @@
                 <li class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     {{ plan.max_patients }} patients
-                </li>
-                <li class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                    {{ plan.module_labels }}
                 </li>
                 <li class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>

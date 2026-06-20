@@ -1,7 +1,18 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Staff — {{ platform_name }}{% endblock %}
-{% block content %}{% with page_title="Staff Management" add_url="users:staff_create" add_label="Add Staff" %}{{ block.super }}{% endwith %}{% endblock %}
-{% block table_content %}
+{% block content %}
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div class="page-header mb-0">
+        <h1>Staff Management</h1>
+        <p class="text-sm text-base-content/60">Manage doctors, nurses, receptionists, and other staff for your hospital.</p>
+    </div>
+    <a href="{% url 'users:staff_create' %}" class="btn btn-premium btn-sm gap-2">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Add Staff
+    </a>
+</div>
+{% include "partials/list_filters.html" %}
+<div class="premium-card overflow-x-auto">
 <table class="table table-zebra">
     <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Email</th><th>Active</th><th></th></tr></thead>
     <tbody>
@@ -14,7 +25,10 @@
             <td>{% if s.is_active %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-error">No</span>{% endif %}</td>
             <td><a href="{% url 'users:staff_edit' s.pk %}" class="btn btn-ghost btn-xs">Edit</a></td>
         </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-12 text-base-content/40">No staff members yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

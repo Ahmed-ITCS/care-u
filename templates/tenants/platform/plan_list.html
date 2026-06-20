@@ -1,4 +1,4 @@
-{% extends "tenants/base_public.html" %}
+{% extends "tenants/platform/base_platform.html" %}
 {% block title %}Subscription Plans — Platform Admin{% endblock %}
 {% block content %}
 <div class="max-w-5xl mx-auto px-6 py-10">
@@ -7,10 +7,7 @@
             <h1>Subscription Plans</h1>
             <p>Create custom packages and assign them to hospitals</p>
         </div>
-        <div class="flex gap-2">
-            <a href="{% url 'platform:plan_create' %}" class="btn btn-premium btn-sm">New Plan</a>
-            <a href="{% url 'platform:dashboard' %}" class="btn btn-ghost btn-sm">&larr; Dashboard</a>
-        </div>
+        <a href="{% url 'platform:plan_create' %}" class="btn btn-premium btn-sm">New Plan</a>
     </div>
 
     <div class="premium-card overflow-x-auto">

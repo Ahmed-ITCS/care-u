@@ -4,16 +4,19 @@
 <div class="mb-6 flex flex-wrap gap-2 items-center">
     <a href="{% url 'patients:list' %}" class="btn btn-ghost btn-sm">&larr; Back</a>
     <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-premium btn-sm">Edit Patient</a>
+    {% if user.role == 'admin' or user.role == 'receptionist' or user.role == 'accountant' %}
+    <a href="{% url 'billing:invoice_from_visit' %}?patient={{ patient.pk }}" class="btn btn-outline btn-sm">New Invoice</a>
+    {% endif %}
 </div>
 <h1 class="text-2xl font-bold text-primary">{{ patient.full_name }}</h1>
 <p class="text-base-content/70 font-mono mb-6">{{ patient.mr_number }} | {{ patient.cnic }}</p>
+
 <div role="tablist" class="tabs tabs-bordered mb-6">
-    <a role="tab" class="tab tab-active">Overview</a>
-    <a role="tab" class="tab">Allergies ({{ patient.allergies.count }})</a>
-    <a role="tab" class="tab">Vitals ({{ patient.vitals.count }})</a>
-    <a role="tab" class="tab">Documents ({{ patient.documents.count }})</a>
+    <a role="tab" class="tab tab-active" href="#overview">Overview</a>
+    <a role="tab" class="tab" href="#billing">Billing ({{ invoices.count }})</a>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+<div id="overview" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     <div class="card bg-base-100 shadow"><div class="card-body">
         <h3 class="card-title text-sm">Demographics</h3>
         <dl class="grid grid-cols-2 gap-2 text-sm">
@@ -31,5 +34,56 @@
         <p class="text-sm">{{ contact.name }} ({{ contact.relationship }}) - {{ contact.phone }}</p>
         {% empty %}<p class="text-sm opacity-60">No emergency contacts</p>{% endfor %}
     </div></div>
+</div>
+
+<div id="billing">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat bg-base-100 shadow rounded-box">
+            <div class="stat-title">Total Billed</div>
+            <div class="stat-value text-lg">PKR {{ total_billed }}</div>
+        </div>
+        <div class="stat bg-base-100 shadow rounded-box">
+            <div class="stat-title">Total Paid</div>
+            <div class="stat-value text-lg text-success">PKR {{ total_paid }}</div>
+        </div>
+        <div class="stat bg-base-100 shadow rounded-box">
+            <div class="stat-title">Balance Due</div>
+            <div class="stat-value text-lg {% if balance_due > 0 %}text-error{% endif %}">PKR {{ balance_due }}</div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <h3 class="card-title text-sm px-6 pt-6">Invoices</h3>
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr>
+                        <td class="font-mono">{{ inv.invoice_number }}</td>
+                        <td>{{ inv.created_at|date:"M j, Y" }}</td>
+                        <td>PKR {{ inv.total_amount }}</td>
+                        <td>PKR {{ inv.amount_paid }}</td>
+                        <td>PKR {{ inv.balance_due }}</td>
+                        <td><span class="badge badge-{{ inv.status }}">{{ inv.get_status_display }}</span></td>
+                        <td><a href="{% url 'billing:invoice_detail' inv.pk %}" class="btn btn-ghost btn-xs">View</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-8 opacity-60">No invoices for this patient yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

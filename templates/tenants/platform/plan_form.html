@@ -1,4 +1,4 @@
-{% extends "tenants/base_public.html" %}
+{% extends "tenants/platform/base_platform.html" %}
 {% block title %}{{ title }} — Platform Admin{% endblock %}
 {% block content %}
 <div class="max-w-2xl mx-auto px-6 py-10">
@@ -9,7 +9,7 @@
         <p>Set staff/patient limits and which ERP modules are included.</p>
     </div>
 
-    <form method="post" class="premium-card space-y-5">
+    <form method="post" class="premium-card p-6 space-y-5">
         {% csrf_token %}
         {% if form.non_field_errors %}
         <div class="alert alert-error text-sm">{{ form.non_field_errors }}</div>

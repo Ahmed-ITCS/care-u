@@ -6,7 +6,8 @@
     <h1 class="text-3xl font-bold text-primary mb-4">Welcome, {{ hospital.name }}!</h1>
     <p class="mb-6">Your {{ platform_name }} workspace is ready. Complete onboarding to get started.</p>
     <div class="card bg-base-100 shadow-lg text-left mb-6"><div class="card-body">
-        <p><strong>Subdomain:</strong> {{ hospital.subdomain }}</p>
+        <p><strong>Hospital code (use at login):</strong> <code class="font-mono text-primary">{{ hospital.subdomain }}</code></p>
+        <p><strong>Your URL:</strong> <code class="font-mono text-sm">/h/{{ hospital.subdomain }}/</code></p>
         <p><strong>Status:</strong> {{ hospital.get_status_display }}</p>
         <p><strong>Trial ends:</strong> {{ hospital.trial_ends }}</p>
     </div></div>
