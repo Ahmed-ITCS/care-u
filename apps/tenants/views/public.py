@@ -98,8 +98,7 @@ def unified_login(request):
         if error == 'ambiguous':
             messages.error(
                 request,
-                'This username exists at more than one hospital. '
-                'Enter your hospital code (subdomain from registration, e.g. my-clinic) or sign in with your email.',
+                'This username exists at more than one hospital. Sign in with your email address instead.',
             )
         elif error == 'invalid_hospital':
             messages.error(request, 'Hospital code not found. Check the code from your registration email or page.')
