@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from apps.core.decorators import roles_required
 from apps.core.list_filters import filter_list_context
+from apps.clinical.doctor_scope import doctor_can_access_patient, doctor_patient_queryset
 from apps.patients.filters import PatientFilter
 from apps.patients.forms import PatientForm
 from apps.patients.models import Patient
@@ -14,11 +15,21 @@ from apps.tenants.limits import check_patient_limit, SubscriptionLimitExceeded
 @login_required
 @roles_required('receptionist', 'doctor', 'nurse', 'admin')
 def patient_list(request):
-    queryset = Patient.objects.all().order_by('-created_at')
+    outstanding_only = request.GET.get('outstanding') == '1'
+    if request.user.role == 'doctor':
+        queryset = doctor_patient_queryset(request.user)
+        if outstanding_only:
+            from apps.clinical.doctor_scope import doctor_outstanding_bills_queryset
+            queryset = doctor_outstanding_bills_queryset(request.user)
+        queryset = queryset.order_by('-created_at')
+    else:
+        queryset = Patient.objects.all().order_by('-created_at')
     ctx = filter_list_context(
         request, queryset, PatientFilter, limit=100, clear_url=reverse('patients:list'),
     )
     ctx['patients'] = ctx.pop('items')
+    ctx['my_patients_view'] = request.user.role == 'doctor'
+    ctx['outstanding_only'] = outstanding_only and request.user.role == 'doctor'
     return render(request, 'patients/list.html', ctx)
 
 
@@ -28,6 +39,9 @@ def patient_detail(request, pk):
     from decimal import Decimal
 
     patient = get_object_or_404(Patient, pk=pk)
+    if request.user.role == 'doctor' and not doctor_can_access_patient(request.user, patient):
+        messages.error(request, 'This patient is not in your care list.')
+        return redirect('patients:list')
     invoices = patient.invoices.order_by('-created_at')
     totals = invoices.aggregate(
         total_billed=Sum('total_amount'),
@@ -35,12 +49,14 @@ def patient_detail(request, pk):
     )
     total_billed = totals['total_billed'] or Decimal('0')
     total_paid = totals['total_paid'] or Decimal('0')
+    lab_requests = patient.lab_requests.select_related('requested_by').order_by('-created_at')[:20]
     return render(request, 'patients/detail.html', {
         'patient': patient,
         'invoices': invoices,
         'total_billed': total_billed,
         'total_paid': total_paid,
         'balance_due': total_billed - total_paid,
+        'lab_requests': lab_requests,
     })
 
 

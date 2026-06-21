@@ -1,9 +1,21 @@
 {% extends "partials/list_page.html" %}
-{% block title %}Patients — {{ platform_name }}{% endblock %}
+{% block title %}{% if my_patients_view %}My Patients{% else %}Patients{% endif %} — {{ platform_name }}{% endblock %}
 {% block content %}
+{% if my_patients_view %}
+<div class="flex flex-wrap gap-2 mb-4">
+    <a href="{% url 'patients:list' %}" class="btn btn-sm {% if not outstanding_only %}btn-primary{% else %}btn-ghost{% endif %}">All my patients</a>
+    <a href="{% url 'patients:list' %}?outstanding=1" class="btn btn-sm {% if outstanding_only %}btn-primary{% else %}btn-ghost{% endif %}">Outstanding bills</a>
+</div>
+{% endif %}
+{% if my_patients_view %}
+{% with page_title="My Patients" page_subtitle=outstanding_only|yesno:"Showing only your patients with unpaid balances.,Patients you have seen via appointments, visits, or lab orders." %}
+{{ block.super }}
+{% endwith %}
+{% else %}
 {% with page_title="Patients" add_url="patients:register" add_label="Register Patient" %}
 {{ block.super }}
 {% endwith %}
+{% endif %}
 {% endblock %}
 {% block table_content %}
 <table class="table premium-table w-full">
@@ -16,11 +28,17 @@
             <td>{{ patient.cnic }}</td>
             <td>{{ patient.phone }}</td>
             <td>{{ patient.get_gender_display|default:"-" }}</td>
-            <td><a href="{% url 'patients:detail' patient.pk %}" class="btn btn-ghost btn-xs">View</a>
-                <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-ghost btn-xs">Edit</a></td>
+            <td>
+                <a href="{% url 'patients:detail' patient.pk %}" class="btn btn-ghost btn-xs">View</a>
+                {% if user.role != 'doctor' %}
+                <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-ghost btn-xs">Edit</a>
+                {% endif %}
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="text-center py-8 opacity-60">No patients found</td></tr>
+        <tr><td colspan="6" class="text-center py-8 opacity-60">
+            {% if outstanding_only %}No patients with outstanding bills in your care.{% elif my_patients_view %}No patients assigned to you yet.{% else %}No patients found{% endif %}
+        </td></tr>
         {% endfor %}
     </tbody>
 </table>

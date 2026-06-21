@@ -63,6 +63,9 @@ def appointment_create(request):
 @roles_required('receptionist', 'admin', 'doctor')
 def appointment_edit(request, pk):
     appt = get_object_or_404(Appointment, pk=pk)
+    if request.user.role == 'doctor' and appt.doctor_id != request.user.pk:
+        messages.error(request, 'You can only edit your own appointments.')
+        return redirect('appointments:doctor_calendar')
     if request.method == 'POST':
         form = AppointmentForm(request.POST, instance=appt)
         if form.is_valid():
@@ -243,11 +246,13 @@ def doctor_availability(request):
 
 
 @login_required
+@roles_required('doctor')
 def doctor_calendar(request):
     today = timezone.now().date()
     appointments = Appointment.objects.filter(
+        doctor=request.user,
         scheduled_date__gte=today,
-    ).select_related('patient', 'doctor')[:100]
+    ).select_related('patient', 'doctor').order_by('scheduled_date', 'scheduled_time')[:100]
     return render(request, 'appointments/calendar.html', {'appointments': appointments})
 
 

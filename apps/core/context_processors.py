@@ -72,8 +72,10 @@ def navigation_context(request):
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
             {'label': 'My Appointments', 'url': 'appointments:doctor_calendar', 'icon': 'calendar'},
             {'label': 'My Availability', 'url': 'appointments:doctor_availability', 'icon': 'clock'},
-            {'label': 'Patients', 'url': 'patients:list', 'icon': 'users'},
+            {'label': 'My Patients', 'url': 'patients:list', 'icon': 'users'},
             {'label': 'Visits', 'url': 'clinical:visits', 'icon': 'stethoscope'},
+            {'label': 'Lab Requests', 'url': 'laboratory:requests', 'icon': 'flask'},
+            {'label': 'Lab Results', 'url': 'laboratory:results', 'icon': 'clipboard'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
         ],
         'nurse': [

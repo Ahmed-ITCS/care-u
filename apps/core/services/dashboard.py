@@ -34,6 +34,7 @@ def get_dashboard_kpis(user):
     if user.role == 'doctor':
         from apps.appointments.models import Appointment
         from apps.clinical.models import Prescription
+        from apps.clinical.doctor_scope import doctor_outstanding_bills_queryset
 
         kpis['my_appointments_today'] = Appointment.objects.filter(
             doctor=user, scheduled_date=today
@@ -41,6 +42,7 @@ def get_dashboard_kpis(user):
         kpis['pending_prescriptions'] = Prescription.objects.filter(
             doctor=user, status='active'
         ).count()
+        kpis['patients_with_outstanding_bills'] = doctor_outstanding_bills_queryset(user).count()
 
     if user.role == 'receptionist':
         from apps.appointments.models import QueueEntry

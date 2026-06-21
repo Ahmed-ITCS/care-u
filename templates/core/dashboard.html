@@ -47,13 +47,18 @@
     {% elif role == 'doctor' %}
     <div class="stat-card text-primary">
         <div class="stat-icon bg-primary/10 text-primary"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
-        <p class="text-sm text-base-content/50 font-medium">My Appointments</p>
+        <p class="text-sm text-base-content/50 font-medium">My Appointments Today</p>
         <p class="text-3xl font-bold mt-1">{{ kpis.my_appointments_today|default:0 }}</p>
     </div>
     <div class="stat-card text-secondary">
         <div class="stat-icon bg-secondary/10 text-secondary"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
         <p class="text-sm text-base-content/50 font-medium">Pending Prescriptions</p>
         <p class="text-3xl font-bold mt-1">{{ kpis.pending_prescriptions|default:0 }}</p>
+    </div>
+    <div class="stat-card text-warning">
+        <div class="stat-icon bg-warning/10 text-warning"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg></div>
+        <p class="text-sm text-base-content/50 font-medium">Patients with Outstanding Bills</p>
+        <p class="text-3xl font-bold mt-1">{{ kpis.patients_with_outstanding_bills|default:0 }}</p>
     </div>
     {% elif role == 'receptionist' %}
     <div class="stat-card text-primary">
@@ -85,6 +90,54 @@
     </div>
     {% endif %}
 </div>
+
+{% if role == 'doctor' %}
+<div class="premium-card mb-8" id="outstanding-bills">
+    <div class="p-6 border-b border-base-300/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h2 class="font-bold text-lg">My Patients with Outstanding Bills</h2>
+            <p class="text-sm text-base-content/50">Patients in your care who still have unpaid balances.</p>
+        </div>
+        {% if doctor_outstanding_bills %}
+        <a href="{% url 'patients:list' %}?outstanding=1" class="btn btn-outline btn-sm">View all</a>
+        {% endif %}
+    </div>
+    <div class="overflow-x-auto">
+        <table class="table premium-table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>MR Number</th>
+                    <th>Total Billed</th>
+                    <th>Paid</th>
+                    <th>Balance Due</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in doctor_outstanding_bills %}
+                <tr>
+                    <td class="font-medium">{{ row.patient.full_name }}</td>
+                    <td class="font-mono text-sm">{{ row.patient.mr_number }}</td>
+                    <td>PKR {{ row.total_billed }}</td>
+                    <td class="text-success">PKR {{ row.total_paid }}</td>
+                    <td class="font-semibold text-error">PKR {{ row.balance_due }}</td>
+                    <td>
+                        <a href="{% url 'patients:detail' row.patient.pk %}#billing" class="btn btn-ghost btn-xs text-primary">View billing →</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-12 text-base-content/40">
+                        No outstanding bills for your patients.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 
 {% if role == 'admin' or role == 'accountant' %}
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

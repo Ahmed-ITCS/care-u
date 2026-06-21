@@ -3,7 +3,12 @@
 {% block content %}
 <div class="mb-6 flex flex-wrap gap-2 items-center">
     <a href="{% url 'patients:list' %}" class="btn btn-ghost btn-sm">&larr; Back</a>
+    {% if user.role != 'doctor' %}
     <a href="{% url 'patients:edit' patient.pk %}" class="btn btn-premium btn-sm">Edit Patient</a>
+    {% endif %}
+    {% if user.role == 'doctor' %}
+    <a href="{% url 'laboratory:request_create' %}?patient={{ patient.pk }}" class="btn btn-outline btn-sm">Order Lab Test</a>
+    {% endif %}
     {% if user.role == 'admin' or user.role == 'receptionist' or user.role == 'accountant' %}
     <a href="{% url 'billing:invoice_from_visit' %}?patient={{ patient.pk }}" class="btn btn-outline btn-sm">New Invoice</a>
     {% endif %}
@@ -14,6 +19,7 @@
 <div role="tablist" class="tabs tabs-bordered mb-6">
     <a role="tab" class="tab tab-active" href="#overview">Overview</a>
     <a role="tab" class="tab" href="#billing">Billing ({{ invoices.count }})</a>
+    <a role="tab" class="tab" href="#labs">Lab ({{ lab_requests.count }})</a>
 </div>
 
 <div id="overview" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -80,6 +86,47 @@
                     </tr>
                     {% empty %}
                     <tr><td colspan="7" class="text-center py-8 opacity-60">No invoices for this patient yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="labs" class="mb-8">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <h3 class="text-lg font-semibold">Lab Requests &amp; Reports</h3>
+        {% if user.role == 'doctor' %}
+        <a href="{% url 'laboratory:request_create' %}?patient={{ patient.pk }}" class="btn btn-outline btn-sm">Order Lab Test</a>
+        {% endif %}
+    </div>
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th>Request #</th>
+                        <th>Status</th>
+                        <th>Ordered by</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in lab_requests %}
+                    <tr>
+                        <td class="font-mono">{{ req.request_number }}</td>
+                        <td><span class="badge">{{ req.get_status_display }}</span></td>
+                        <td>{{ req.requested_by.get_full_name|default:"—" }}</td>
+                        <td>{{ req.created_at|date:"M j, Y" }}</td>
+                        <td>
+                            {% if req.status == 'completed' %}
+                            <a href="{% url 'laboratory:results' %}?q={{ req.request_number }}" class="btn btn-ghost btn-xs">View results</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-8 opacity-60">No lab requests for this patient yet</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

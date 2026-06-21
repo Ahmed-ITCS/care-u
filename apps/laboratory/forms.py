@@ -17,7 +17,11 @@ class LabTestRequestForm(forms.ModelForm):
         fields = ['patient', 'priority', 'clinical_notes']
         widgets = {'clinical_notes': forms.Textarea(attrs={'rows': 3})}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['patient'].queryset = Patient.objects.all().order_by('full_name')
+        if user and getattr(user, 'role', None) == 'doctor':
+            from apps.clinical.doctor_scope import doctor_patient_queryset
+            self.fields['patient'].queryset = doctor_patient_queryset(user).order_by('full_name')
+        else:
+            self.fields['patient'].queryset = Patient.objects.all().order_by('full_name')
         style_form(self)

@@ -26,6 +26,11 @@ def invoice_list(request):
 @login_required
 def invoice_detail(request, pk):
     invoice = get_object_or_404(Invoice.objects.prefetch_related('items', 'payments'), pk=pk)
+    if request.user.role == 'doctor':
+        from apps.clinical.doctor_scope import doctor_can_access_patient
+        if not doctor_can_access_patient(request.user, invoice.patient):
+            messages.error(request, 'You do not have access to this invoice.')
+            return redirect('patients:list')
     payment_form = None
     if request.user.role in ('admin', 'accountant', 'receptionist') and invoice.balance_due > 0:
         payment_form = PaymentForm(invoice=invoice)

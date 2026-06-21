@@ -48,6 +48,9 @@ def visit_create(request):
 @login_required
 def visit_detail(request, pk):
     visit = get_object_or_404(Visit.objects.select_related('patient', 'doctor'), pk=pk)
+    if request.user.role == 'doctor' and visit.doctor_id != request.user.pk:
+        messages.error(request, 'You can only view your own visits.')
+        return redirect('clinical:visits')
     return render(request, 'clinical/visit_detail.html', {'visit': visit})
 
 

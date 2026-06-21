@@ -19,6 +19,11 @@ def dashboard(request):
         'kpis': kpis,
         'role': request.user.role,
     }
+    if request.user.role == 'doctor':
+        from apps.clinical.doctor_scope import doctor_patients_with_outstanding_bills
+        context['doctor_outstanding_bills'] = doctor_patients_with_outstanding_bills(
+            request.user, limit=15,
+        )
     if request.user.role in ('admin', 'accountant'):
         context['revenue_chart_json'] = json.dumps(get_revenue_chart_data())
         context['appointment_chart_json'] = json.dumps(get_appointment_status_chart())
