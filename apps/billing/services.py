@@ -12,6 +12,33 @@ def get_service_price(service_code):
     return price.price if price else Decimal('0')
 
 
+def get_current_service_price(service):
+    price = service.prices.filter(is_current=True).first()
+    return price.price if price else Decimal('0')
+
+
+@transaction.atomic
+def set_service_price(service, price, effective_from=None):
+    """Archive the current price and set a new one."""
+    from django.utils import timezone
+
+    price = Decimal(price)
+    effective_from = effective_from or timezone.now().date()
+    current = service.prices.filter(is_current=True).first()
+    if current and current.price == price:
+        return current
+    if current:
+        current.is_current = False
+        current.effective_until = effective_from
+        current.save(update_fields=['is_current', 'effective_until', 'updated_at'])
+    return ServicePrice.objects.create(
+        service=service,
+        price=price,
+        effective_from=effective_from,
+        is_current=True,
+    )
+
+
 @transaction.atomic
 def create_invoice_from_visit(visit_id, user):
     from apps.clinical.models import Visit

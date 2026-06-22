@@ -1,0 +1,45 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Service Charges — {{ platform_name }}{% endblock %}
+{% block content %}
+{% with page_title="Service Charges" page_subtitle="Manage standard billable charges — consultations, procedures, room rates, and more." add_url="billing:charge_create" add_label="Add Charge" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
+{% block table_content %}
+<table class="table premium-table w-full">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Service</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in charges %}
+        <tr>
+            <td class="font-mono text-sm">{{ row.service.code }}</td>
+            <td class="font-medium">{{ row.service.name }}</td>
+            <td>{{ row.service.get_category_display }}</td>
+            <td class="font-semibold">
+                {% if row.current_price is not None %}PKR {{ row.current_price }}{% else %}—{% endif %}
+            </td>
+            <td>
+                {% if row.service.is_active %}
+                <span class="badge badge-success badge-sm">Active</span>
+                {% else %}
+                <span class="badge badge-ghost badge-sm">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'billing:charge_edit' row.service.pk %}" class="btn btn-ghost btn-xs text-primary">Edit</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-12 text-base-content/40">No service charges yet. Add your first charge or run hospital seed data.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

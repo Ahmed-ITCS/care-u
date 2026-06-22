@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 
-from apps.billing.models import Invoice, Payment
+from apps.billing.models import Invoice, Payment, ServiceCatalog
 
 
 class InvoiceFilter(django_filters.FilterSet):
@@ -59,4 +59,31 @@ class PaymentFilter(django_filters.FilterSet):
             Q(invoice__invoice_number__icontains=value)
             | Q(transaction_id__icontains=value)
             | Q(invoice__patient__full_name__icontains=value)
+        )
+
+
+class ServiceChargeFilter(django_filters.FilterSet):
+    search_placeholder = 'Name, code, description...'
+    q = django_filters.CharFilter(method='filter_search', label='Search')
+    category = django_filters.ChoiceFilter(
+        choices=ServiceCatalog.CATEGORY_CHOICES, empty_label='All categories',
+    )
+    is_active = django_filters.BooleanFilter(label='Active only')
+
+    layout = {
+        'primary': ['q', 'category', 'is_active'],
+        'groups': [],
+    }
+
+    class Meta:
+        model = ServiceCatalog
+        fields = []
+
+    def filter_search(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            Q(name__icontains=value)
+            | Q(code__icontains=value)
+            | Q(description__icontains=value)
         )

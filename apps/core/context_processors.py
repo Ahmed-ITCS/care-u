@@ -63,6 +63,7 @@ def navigation_context(request):
             {'label': 'Laboratory', 'url': 'laboratory:requests', 'icon': 'flask'},
             {'label': 'Pharmacy', 'url': 'pharmacy:inventory', 'icon': 'pill'},
             {'label': 'Billing', 'url': 'billing:invoices', 'icon': 'receipt'},
+            {'label': 'Service Charges', 'url': 'billing:charges', 'icon': 'credit-card'},
             {'label': 'HR', 'url': 'hr:attendance', 'icon': 'briefcase'},
             {'label': 'Reports', 'url': 'reports:index', 'icon': 'chart'},
             {'label': 'Staff', 'url': 'users:staff_list', 'icon': 'user-cog'},
@@ -96,6 +97,7 @@ def navigation_context(request):
         'accountant': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
             {'label': 'Invoices', 'url': 'billing:invoices', 'icon': 'receipt'},
+            {'label': 'Service Charges', 'url': 'billing:charges', 'icon': 'credit-card'},
             {'label': 'Payments', 'url': 'billing:payments', 'icon': 'credit-card'},
             {'label': 'Reports', 'url': 'reports:index', 'icon': 'chart'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},

@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
-from apps.billing.filters import InvoiceFilter, PaymentFilter
-from apps.billing.forms import InvoiceFromVisitForm, PaymentForm
-from apps.billing.models import Invoice, Payment
-from apps.billing.services import create_invoice_from_visit, record_payment
+from apps.billing.filters import InvoiceFilter, PaymentFilter, ServiceChargeFilter
+from apps.billing.forms import InvoiceFromVisitForm, PaymentForm, ServiceChargeForm
+from apps.billing.models import Invoice, Payment, ServiceCatalog, ServicePrice
+from apps.billing.services import create_invoice_from_visit, record_payment, get_current_service_price
 from apps.core.decorators import roles_required
 from apps.core.list_filters import filter_list_context
 
@@ -103,3 +104,66 @@ def payment_list(request):
 def my_bills(request):
     invoices = Invoice.objects.filter(patient__user_account=request.user)
     return render(request, 'billing/my_bills.html', {'invoices': invoices})
+
+
+@login_required
+@roles_required('admin', 'accountant')
+def charge_list(request):
+    queryset = ServiceCatalog.objects.prefetch_related(
+        Prefetch('prices', queryset=ServicePrice.objects.filter(is_current=True)),
+    ).order_by('category', 'name')
+    ctx = filter_list_context(
+        request, queryset, ServiceChargeFilter, limit=100, clear_url=reverse('billing:charges'),
+    )
+    charges = []
+    for service in ctx.pop('items'):
+        current = service.prices.first()
+        charges.append({
+            'service': service,
+            'current_price': current.price if current else None,
+        })
+    ctx['charges'] = charges
+    return render(request, 'billing/charges.html', ctx)
+
+
+@login_required
+@roles_required('admin', 'accountant')
+def charge_create(request):
+    if request.method == 'POST':
+        form = ServiceChargeForm(request.POST)
+        if form.is_valid():
+            service = form.save()
+            messages.success(request, f'Charge "{service.name}" added.')
+            return redirect('billing:charges')
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ServiceChargeForm()
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': 'Add Service Charge',
+        'subtitle': 'Define a billable service and its standard price.',
+        'back_url': 'billing:charges',
+        'submit_label': 'Save Charge',
+    })
+
+
+@login_required
+@roles_required('admin', 'accountant')
+def charge_edit(request, pk):
+    service = get_object_or_404(ServiceCatalog, pk=pk)
+    if request.method == 'POST':
+        form = ServiceChargeForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Charge "{service.name}" updated.')
+            return redirect('billing:charges')
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ServiceChargeForm(instance=service)
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': f'Edit {service.name}',
+        'subtitle': f'Current price: PKR {get_current_service_price(service)}',
+        'back_url': 'billing:charges',
+        'submit_label': 'Save Changes',
+    })
