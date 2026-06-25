@@ -1,9 +1,15 @@
 {% extends "partials/list_page.html" %}
 {% block title %}Service Charges — {{ platform_name }}{% endblock %}
 {% block content %}
+{% if can_manage_charges %}
 {% with page_title="Service Charges" page_subtitle="Manage standard billable charges — consultations, procedures, room rates, and more." add_url="billing:charge_create" add_label="Add Charge" %}
 {{ block.super }}
 {% endwith %}
+{% else %}
+{% with page_title="Service Charges" page_subtitle="View current standard charges for consultations, procedures, and other billable services." %}
+{{ block.super }}
+{% endwith %}
+{% endif %}
 {% endblock %}
 {% block table_content %}
 <table class="table premium-table w-full">
@@ -13,8 +19,7 @@
             <th>Service</th>
             <th>Category</th>
             <th>Price</th>
-            <th>Status</th>
-            <th></th>
+            {% if can_manage_charges %}<th>Status</th><th></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -26,6 +31,7 @@
             <td class="font-semibold">
                 {% if row.current_price is not None %}PKR {{ row.current_price }}{% else %}—{% endif %}
             </td>
+            {% if can_manage_charges %}
             <td>
                 {% if row.service.is_active %}
                 <span class="badge badge-success badge-sm">Active</span>
@@ -36,9 +42,12 @@
             <td>
                 <a href="{% url 'billing:charge_edit' row.service.pk %}" class="btn btn-ghost btn-xs text-primary">Edit</a>
             </td>
+            {% endif %}
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="text-center py-12 text-base-content/40">No service charges yet. Add your first charge or run hospital seed data.</td></tr>
+        <tr><td colspan="{% if can_manage_charges %}6{% else %}4{% endif %}" class="text-center py-12 text-base-content/40">
+            {% if can_manage_charges %}No service charges yet. Add your first charge or run hospital seed data.{% else %}No active service charges to display.{% endif %}
+        </td></tr>
         {% endfor %}
     </tbody>
 </table>

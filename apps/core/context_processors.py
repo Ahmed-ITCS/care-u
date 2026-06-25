@@ -77,6 +77,7 @@ def navigation_context(request):
             {'label': 'Visits', 'url': 'clinical:visits', 'icon': 'stethoscope'},
             {'label': 'Lab Requests', 'url': 'laboratory:requests', 'icon': 'flask'},
             {'label': 'Lab Results', 'url': 'laboratory:results', 'icon': 'clipboard'},
+            {'label': 'Service Charges', 'url': 'billing:charges', 'icon': 'credit-card'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
         ],
         'nurse': [
@@ -92,6 +93,7 @@ def navigation_context(request):
             {'label': 'Queue', 'url': 'appointments:queue', 'icon': 'list'},
             {'label': 'Appointments', 'url': 'appointments:list', 'icon': 'calendar'},
             {'label': 'Register Patient', 'url': 'patients:register', 'icon': 'user-plus'},
+            {'label': 'Service Charges', 'url': 'billing:charges', 'icon': 'credit-card'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
         ],
         'accountant': [

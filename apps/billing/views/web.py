@@ -8,6 +8,13 @@ from apps.billing.filters import InvoiceFilter, PaymentFilter, ServiceChargeFilt
 from apps.billing.forms import InvoiceFromVisitForm, PaymentForm, ServiceChargeForm
 from apps.billing.models import Invoice, Payment, ServiceCatalog, ServicePrice
 from apps.billing.services import create_invoice_from_visit, record_payment, get_current_service_price
+
+CHARGE_VIEW_ROLES = ('admin', 'accountant', 'receptionist', 'doctor')
+CHARGE_MANAGE_ROLES = ('admin', 'accountant')
+
+
+def _can_manage_charges(user):
+    return getattr(user, 'role', None) in CHARGE_MANAGE_ROLES
 from apps.core.decorators import roles_required
 from apps.core.list_filters import filter_list_context
 
@@ -107,11 +114,13 @@ def my_bills(request):
 
 
 @login_required
-@roles_required('admin', 'accountant')
+@roles_required(*CHARGE_VIEW_ROLES)
 def charge_list(request):
     queryset = ServiceCatalog.objects.prefetch_related(
         Prefetch('prices', queryset=ServicePrice.objects.filter(is_current=True)),
     ).order_by('category', 'name')
+    if not _can_manage_charges(request.user):
+        queryset = queryset.filter(is_active=True)
     ctx = filter_list_context(
         request, queryset, ServiceChargeFilter, limit=100, clear_url=reverse('billing:charges'),
     )
@@ -123,11 +132,12 @@ def charge_list(request):
             'current_price': current.price if current else None,
         })
     ctx['charges'] = charges
+    ctx['can_manage_charges'] = _can_manage_charges(request.user)
     return render(request, 'billing/charges.html', ctx)
 
 
 @login_required
-@roles_required('admin', 'accountant')
+@roles_required(*CHARGE_MANAGE_ROLES)
 def charge_create(request):
     if request.method == 'POST':
         form = ServiceChargeForm(request.POST)
@@ -148,7 +158,7 @@ def charge_create(request):
 
 
 @login_required
-@roles_required('admin', 'accountant')
+@roles_required(*CHARGE_MANAGE_ROLES)
 def charge_edit(request, pk):
     service = get_object_or_404(ServiceCatalog, pk=pk)
     if request.method == 'POST':

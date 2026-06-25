@@ -57,9 +57,15 @@ class InvoiceSerializer(serializers.ModelSerializer):
 class ServiceCatalogViewSet(viewsets.ModelViewSet):
     queryset = ServiceCatalog.objects.filter(is_active=True).prefetch_related('prices')
     serializer_class = ServiceCatalogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, RolePermission]
     filterset_fields = ['category']
     search_fields = ['name', 'code']
+
+    @property
+    def required_roles(self):
+        if getattr(self, 'action', None) in ('list', 'retrieve'):
+            return [Role.ADMIN, Role.ACCOUNTANT, Role.RECEPTIONIST, Role.DOCTOR]
+        return [Role.ADMIN, Role.ACCOUNTANT]
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
