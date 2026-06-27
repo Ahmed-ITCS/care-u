@@ -81,6 +81,7 @@ def navigation_context(request):
         'nurse': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
             {'label': 'Patients', 'url': 'patients:list', 'icon': 'users'},
+            {'label': 'My Shifts', 'url': 'hr:my_roster', 'icon': 'clock'},
             {'label': 'Wards', 'url': 'clinical:wards', 'icon': 'bed'},
             {'label': 'Vitals', 'url': 'clinical:vitals', 'icon': 'heart'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},

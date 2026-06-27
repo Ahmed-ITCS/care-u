@@ -19,7 +19,16 @@ class PayrollRunAdmin(admin.ModelAdmin):
     list_display = ('month', 'year', 'status', 'total_amount')
 
 
-admin.site.register(Shift)
-admin.site.register(StaffShiftAssignment)
+@admin.register(Shift)
+class ShiftAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_time', 'end_time', 'is_active')
+
+
+@admin.register(StaffShiftAssignment)
+class StaffShiftAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('staff', 'shift', 'ward', 'date', 'created_at')
+    list_filter = ('date', 'shift', 'ward')
+
+
 admin.site.register(PayrollItem)
 admin.site.register(DoctorCommission)

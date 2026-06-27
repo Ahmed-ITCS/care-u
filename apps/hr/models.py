@@ -16,15 +16,20 @@ class Shift(TimeStampedModel):
 
 class StaffShiftAssignment(TimeStampedModel):
     staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shift_assignments')
-    shift = models.ForeignKey(Shift, on_delete=models.CASCADE)
-    date = models.DateField()
+    shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='assignments')
+    ward = models.ForeignKey(
+        'clinical.Ward', on_delete=models.SET_NULL, null=True, blank=True, related_name='shift_assignments',
+    )
+    date = models.DateField(db_index=True)
     notes = models.TextField(blank=True)
 
     class Meta:
         unique_together = ['staff', 'date', 'shift']
+        ordering = ['-date', 'shift__start_time']
 
     def __str__(self):
-        return f'{self.staff} - {self.shift} on {self.date}'
+        ward = f' @ {self.ward.name}' if self.ward_id else ''
+        return f'{self.staff} - {self.shift} on {self.date}{ward}'
 
 
 class Attendance(TimeStampedModel):

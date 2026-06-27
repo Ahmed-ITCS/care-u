@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from apps.core.services.dashboard import (
+    get_dashboard_stat_cards,
     get_dashboard_kpis,
     get_revenue_chart_data,
     get_appointment_status_chart,
@@ -14,9 +15,9 @@ from apps.core.services.dashboard import (
 
 @login_required
 def dashboard(request):
-    kpis = get_dashboard_kpis(request.user)
     context = {
-        'kpis': kpis,
+        'stat_cards': get_dashboard_stat_cards(request.user),
+        'kpis': get_dashboard_kpis(request.user),
         'role': request.user.role,
     }
     if request.user.role == 'doctor':

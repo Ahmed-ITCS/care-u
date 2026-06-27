@@ -1,12 +1,12 @@
 import csv
 import io
-import re
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+from apps.core.cnic import format_cnic, is_valid_cnic
 from apps.core.import_data.schemas import get_required_keys, normalize_header
 from apps.patients.models import Patient
 from apps.users.models import Role, StaffProfile, DoctorProfile
@@ -14,10 +14,10 @@ from apps.pharmacy.models import Drug, DrugCategory
 from apps.laboratory.models import TestCatalog, TestCategory
 
 User = get_user_model()
-CNIC_PATTERN = re.compile(r'^\d{5}-\d{7}-\d$')
 VALID_GENDERS = {'M', 'F', 'O'}
 VALID_BLOOD = {'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'}
 VALID_ROLES = {r.value for r in Role if r != Role.PATIENT}
+VALID_WARD_TYPES = {'general', 'icu', 'pediatric', 'maternity', 'private', 'emergency'}
 
 
 class ImportResult:
@@ -96,14 +96,33 @@ def _parse_decimal(value, default=Decimal('0')):
         return None
 
 
+def _parse_time(value, row_num, field, result):
+    if not value:
+        result.add_error(row_num, f'{field} is required')
+        return None
+    for fmt in ('%H:%M', '%H:%M:%S', '%I:%M %p', '%I:%M%p'):
+        try:
+            return datetime.strptime(value.strip(), fmt).time()
+        except ValueError:
+            continue
+    result.add_error(row_num, f'{field}: invalid time "{value}" (use HH:MM)')
+    return None
+
+
+def _parse_bool(value, default=True):
+    if not value:
+        return default
+    return value.strip().lower() in ('1', 'true', 'yes', 'y', 'active')
+
+
 @transaction.atomic
 def import_patients(rows, user, result):
     from apps.tenants.limits import check_patient_limit, SubscriptionLimitExceeded
 
     for i, row in enumerate(rows, start=2):
-        cnic = row.get('cnic', '')
-        if not CNIC_PATTERN.match(cnic):
-            result.add_error(i, f'CNIC "{cnic}" must be format 12345-1234567-1')
+        cnic = format_cnic(row.get('cnic', ''))
+        if not is_valid_cnic(cnic):
+            result.add_error(i, f'CNIC "{row.get("cnic")}" must be a valid 13-digit CNIC')
             continue
 
         first = row.get('first_name', '')
@@ -203,7 +222,7 @@ def import_staff(rows, user, result):
             phone=row.get('phone', ''),
             is_verified=True,
         )
-        StaffProfile.objects.create(user=new_user, cnic=row.get('cnic', ''))
+        StaffProfile.objects.create(user=new_user, cnic=format_cnic(row.get('cnic', '')) or row.get('cnic', ''))
 
         if role == Role.DOCTOR:
             specialty = row.get('specialty') or 'General Medicine'
@@ -276,11 +295,7 @@ def import_lab_tests(rows, user, result):
             result.add_error(i, f'price "{row.get("price")}" is not a valid number')
             continue
 
-        try:
-            category = TestCategory.objects.get(name__iexact=category_name)
-        except TestCategory.DoesNotExist:
-            result.add_error(i, f'category "{category_name}" not found — create it first or run seed data')
-            continue
+        category, _ = TestCategory.objects.get_or_create(name=category_name)
 
         turnaround = row.get('turnaround_hours')
         try:
@@ -306,11 +321,137 @@ def import_lab_tests(rows, user, result):
             result.add_error(i, f'Test code {code} already exists — skipped')
 
 
+@transaction.atomic
+def import_wards(rows, user, result):
+    from apps.clinical.models import Ward
+
+    for i, row in enumerate(rows, start=2):
+        name = row.get('name', '')
+        if not name:
+            result.add_error(i, 'name is required')
+            continue
+
+        ward_type = (row.get('ward_type') or 'general').lower()
+        if ward_type not in VALID_WARD_TYPES:
+            result.add_error(i, f'ward_type must be one of: {", ".join(sorted(VALID_WARD_TYPES))}')
+            continue
+
+        capacity = row.get('capacity')
+        try:
+            capacity_val = int(capacity) if capacity else 0
+        except ValueError:
+            result.add_error(i, 'capacity must be a number')
+            continue
+
+        ward, created = Ward.objects.get_or_create(
+            name=name,
+            defaults={
+                'ward_type': ward_type,
+                'floor': row.get('floor', ''),
+                'capacity': capacity_val,
+            },
+        )
+        if created:
+            result.created += 1
+        else:
+            ward.ward_type = ward_type
+            ward.floor = row.get('floor', '')
+            ward.capacity = capacity_val
+            ward.is_active = True
+            ward.save(update_fields=['ward_type', 'floor', 'capacity', 'is_active', 'updated_at'])
+            result.updated += 1
+
+
+@transaction.atomic
+def import_shifts(rows, user, result):
+    from apps.hr.models import Shift
+
+    for i, row in enumerate(rows, start=2):
+        name = row.get('name', '')
+        if not name:
+            result.add_error(i, 'name is required')
+            continue
+
+        start_time = _parse_time(row.get('start_time', ''), i, 'start_time', result)
+        if start_time is None:
+            continue
+        end_time = _parse_time(row.get('end_time', ''), i, 'end_time', result)
+        if end_time is None:
+            continue
+
+        is_active = _parse_bool(row.get('is_active'), default=True)
+        shift, created = Shift.objects.get_or_create(
+            name=name,
+            defaults={'start_time': start_time, 'end_time': end_time, 'is_active': is_active},
+        )
+        if created:
+            result.created += 1
+        else:
+            shift.start_time = start_time
+            shift.end_time = end_time
+            shift.is_active = is_active
+            shift.save(update_fields=['start_time', 'end_time', 'is_active', 'updated_at'])
+            result.updated += 1
+
+
+@transaction.atomic
+def import_shift_roster(rows, user, result):
+    from apps.clinical.models import Ward
+    from apps.hr.models import Shift, StaffShiftAssignment
+
+    for i, row in enumerate(rows, start=2):
+        username = row.get('nurse_username', '')
+        shift_name = row.get('shift', '')
+        date = _parse_date(row.get('date', ''), i, 'date', result)
+        if not username or not shift_name:
+            result.add_error(i, 'nurse_username and shift are required')
+            continue
+        if date is None:
+            continue
+
+        try:
+            nurse = User.objects.get(username=username, role=Role.NURSE, is_active=True)
+        except User.DoesNotExist:
+            result.add_error(i, f'Nurse "{username}" not found — import staff with role nurse first')
+            continue
+
+        try:
+            shift = Shift.objects.get(name__iexact=shift_name, is_active=True)
+        except Shift.DoesNotExist:
+            result.add_error(i, f'Shift "{shift_name}" not found — import shifts first')
+            continue
+
+        ward = None
+        ward_name = row.get('ward', '')
+        if ward_name:
+            ward = Ward.objects.filter(name__iexact=ward_name, is_active=True).first()
+            if not ward:
+                result.add_error(i, f'Ward "{ward_name}" not found — import wards first or leave blank')
+                continue
+
+        assignment, created = StaffShiftAssignment.objects.update_or_create(
+            staff=nurse,
+            shift=shift,
+            date=date,
+            defaults={
+                'ward': ward,
+                'notes': row.get('notes', ''),
+            },
+        )
+        if created:
+            result.created += 1
+        else:
+            result.updated += 1
+
+
 IMPORT_HANDLERS = {
     'patients': import_patients,
     'staff': import_staff,
     'drugs': import_drugs,
     'lab_tests': import_lab_tests,
+    'wards': import_wards,
+    'shifts': import_shifts,
+    'shift_roster': import_shift_roster,
 }
 
 

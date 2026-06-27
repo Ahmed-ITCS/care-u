@@ -10,6 +10,8 @@ def style_form(form):
     """Apply DaisyUI classes to all fields on a form."""
     for field in form.fields.values():
         widget = field.widget
+        if isinstance(widget, forms.MultiWidget):
+            continue
         if isinstance(widget, forms.CheckboxInput):
             widget.attrs.setdefault('class', 'checkbox checkbox-primary')
         elif isinstance(widget, forms.SelectMultiple):

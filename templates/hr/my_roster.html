@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}My Shifts — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="page-header mb-6">
+    <h1>My Shifts</h1>
+    <p class="text-base-content/60">Your upcoming and recent ward/shift assignments</p>
+</div>
+
+<div class="premium-card overflow-x-auto mb-8">
+    <div class="p-6 border-b border-base-300/50">
+        <h2 class="font-bold text-lg">Upcoming</h2>
+    </div>
+    <table class="table premium-table">
+        <thead>
+            <tr><th>Date</th><th>Shift</th><th>Ward</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+            {% for a in upcoming %}
+            <tr>
+                <td>{{ a.date|date:"l, M d, Y" }}</td>
+                <td>{{ a.shift.name }} ({{ a.shift.start_time|time:"g:i A" }}–{{ a.shift.end_time|time:"g:i A" }})</td>
+                <td>{{ a.ward.name|default:"—" }}</td>
+                <td class="text-sm text-base-content/60">{{ a.notes|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center py-12 text-base-content/40">No upcoming shifts assigned.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="premium-card overflow-x-auto">
+    <div class="p-6 border-b border-base-300/50">
+        <h2 class="font-bold text-lg">Recent</h2>
+    </div>
+    <table class="table premium-table">
+        <thead>
+            <tr><th>Date</th><th>Shift</th><th>Ward</th></tr>
+        </thead>
+        <tbody>
+            {% for a in recent %}
+            <tr>
+                <td>{{ a.date|date:"M d, Y" }}</td>
+                <td>{{ a.shift.name }}</td>
+                <td>{{ a.ward.name|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center py-8 text-base-content/40">No recent shift history.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

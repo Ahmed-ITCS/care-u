@@ -1,6 +1,7 @@
 import django_filters
 
-from apps.hr.models import Attendance, LeaveRequest, PayrollRun
+from apps.clinical.models import Ward
+from apps.hr.models import Attendance, LeaveRequest, PayrollRun, Shift, StaffShiftAssignment
 from apps.users.models import Role, User
 
 
@@ -60,4 +61,34 @@ class PayrollRunFilter(django_filters.FilterSet):
 
     class Meta:
         model = PayrollRun
+        fields = []
+
+
+class StaffShiftAssignmentFilter(django_filters.FilterSet):
+    date = django_filters.DateFilter(label='Date')
+    date_from = django_filters.DateFilter(field_name='date', lookup_expr='gte', label='From')
+    date_to = django_filters.DateFilter(field_name='date', lookup_expr='lte', label='To')
+    staff = django_filters.ModelChoiceFilter(
+        queryset=User.objects.filter(role=Role.NURSE, is_active=True).order_by('first_name', 'last_name'),
+        empty_label='All nurses',
+        label='Nurse',
+    )
+    shift = django_filters.ModelChoiceFilter(
+        queryset=Shift.objects.filter(is_active=True).order_by('start_time'),
+        empty_label='All shifts',
+    )
+    ward = django_filters.ModelChoiceFilter(
+        queryset=Ward.objects.filter(is_active=True).order_by('name'),
+        empty_label='All wards',
+    )
+
+    layout = {
+        'primary': ['date', 'staff', 'shift', 'ward'],
+        'groups': [
+            {'label': 'Date range', 'fields': ['date_from', 'date_to']},
+        ],
+    }
+
+    class Meta:
+        model = StaffShiftAssignment
         fields = []

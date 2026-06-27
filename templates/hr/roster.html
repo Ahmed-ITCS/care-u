@@ -1,0 +1,50 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Shift Roster — {{ platform_name }}{% endblock %}
+{% block content %}
+{% include "hr/_nav.html" with active="roster" is_admin=True %}
+{% if shift_count == 0 %}
+<div class="alert alert-warning mb-4">
+    <span>No shifts defined yet. <a href="{% url 'hr:shifts' %}" class="link link-primary">Create shifts</a> before assigning nurses.</span>
+</div>
+{% endif %}
+{% with page_title="Shift Roster" page_subtitle="Assign nurses to shifts and wards by date" add_url="hr:roster_create" add_label="Assign Shift" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
+{% block table_content %}
+<table class="table premium-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Nurse</th>
+            <th>Shift</th>
+            <th>Ward</th>
+            <th>Notes</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in assignments %}
+        <tr>
+            <td>{{ a.date|date:"M d, Y" }}</td>
+            <td class="font-medium">{{ a.staff.get_full_name|default:a.staff.username }}</td>
+            <td>{{ a.shift.name }} <span class="text-base-content/50 text-xs">({{ a.shift.start_time|time:"g:i A" }}–{{ a.shift.end_time|time:"g:i A" }})</span></td>
+            <td>{{ a.ward.name|default:"—" }}</td>
+            <td class="text-sm text-base-content/60 max-w-xs truncate">{{ a.notes|default:"—" }}</td>
+            <td>
+                <form method="post" action="{% url 'hr:roster_delete' a.pk %}" class="inline" onsubmit="return confirm('Remove this assignment?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ghost btn-xs text-error">Remove</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center py-12 text-base-content/40">
+                No shift assignments for this date. Click <strong>Assign Shift</strong> to add one.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

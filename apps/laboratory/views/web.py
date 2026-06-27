@@ -27,7 +27,7 @@ def request_list(request):
 
 
 @login_required
-@roles_required('doctor', 'nurse', 'receptionist', 'admin')
+@roles_required('doctor', 'nurse', 'receptionist', 'admin', 'lab_tech')
 def request_create(request):
     patient_pk = request.GET.get('patient') or request.POST.get('patient')
     initial_patient = None
