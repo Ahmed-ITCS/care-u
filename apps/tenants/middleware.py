@@ -207,7 +207,8 @@ class PublicSchemaAuthGuardMiddleware:
         response = self.get_response(request)
 
         stashed = getattr(request, '_stashed_tenant_auth', None)
-        if stashed:
+        # Do not restore stale auth over a fresh POST login (e.g. /login/).
+        if stashed and request.method != 'POST':
             request.session.update(stashed)
             request.session.modified = True
 
