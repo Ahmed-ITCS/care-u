@@ -10,6 +10,7 @@ from apps.tenants.models import Hospital, PlatformUser, SubscriptionPlan
 from apps.tenants.services import create_hospital_tenant, get_tenant_usage_stats
 from apps.tenants.decorators import platform_admin_required
 from apps.tenants.auth import resolve_tenant_and_authenticate, admin_email_taken
+from apps.tenants.auth_logging import log_auth, session_snapshot
 
 
 def landing(request):
@@ -83,6 +84,7 @@ def unified_login(request):
         identifier = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
         hospital_code = request.POST.get('hospital_code', '').strip().lower()
+        log_auth('login_attempt', request, identifier=identifier, hospital_code=hospital_code or None)
         hospital, user, error = resolve_tenant_and_authenticate(
             identifier, password, hospital_subdomain=hospital_code or None,
         )
@@ -94,7 +96,17 @@ def unified_login(request):
             request.session['tenant_subdomain'] = hospital.subdomain
             request.session['tenant_schema'] = hospital.schema_name
             request.session.modified = True
+            log_auth(
+                'login_success',
+                request,
+                identifier=identifier,
+                hospital=hospital.subdomain,
+                user_id=user.pk,
+                username=user.username,
+                session_after=session_snapshot(request.session),
+            )
             return redirect(f'/h/{hospital.subdomain}/')
+        log_auth('login_failed', request, identifier=identifier, error=error)
         if error == 'ambiguous':
             messages.error(
                 request,

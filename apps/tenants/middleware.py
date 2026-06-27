@@ -11,6 +11,7 @@ from django_tenants.middleware.subfolder import TenantSubfolderMiddleware as Dja
 from django_tenants.utils import get_public_schema_name
 
 from apps.tenants.db import ensure_tenant_domain_subfolder, resolve_domain_subfolder
+from apps.tenants.auth_logging import log_auth, session_snapshot
 from apps.tenants.limits import SubscriptionLimitExceeded, check_module_access
 from apps.tenants.sqlite_compat import set_connection_public, set_connection_tenant
 
@@ -203,6 +204,11 @@ class PublicSchemaAuthGuardMiddleware:
             if stashed:
                 request._stashed_tenant_auth = stashed
                 request.session.modified = True
+                log_auth(
+                    'auth_stashed_public',
+                    request,
+                    stashed_user_id=stashed.get('_auth_user_id'),
+                )
 
         response = self.get_response(request)
 
@@ -211,6 +217,21 @@ class PublicSchemaAuthGuardMiddleware:
         if stashed and request.method != 'POST':
             request.session.update(stashed)
             request.session.modified = True
+            log_auth(
+                'auth_restored_public',
+                request,
+                restored_user_id=stashed.get('_auth_user_id'),
+            )
+        elif stashed and request.method == 'POST':
+            log_auth(
+                'auth_restore_skipped_post',
+                request,
+                skipped_user_id=stashed.get('_auth_user_id'),
+                session_after=session_snapshot(request.session),
+            )
+
+        if request.path == '/login/' or request.path.startswith('/h/'):
+            log_auth('auth_guard_done', request, status=getattr(response, 'status_code', None))
 
         return response
 
@@ -232,11 +253,36 @@ class TenantSessionAuthMiddleware:
         schema = getattr(tenant, 'schema_name', 'public')
 
         if schema == get_public_schema_name():
+            if getattr(request.user, 'is_authenticated', False):
+                log_auth(
+                    'auth_cleared_public_schema',
+                    request,
+                    was_user=getattr(request.user, 'username', None),
+                    was_user_id=getattr(request.user, 'pk', None),
+                )
             request.user = AnonymousUser()
         else:
             session_tenant = request.session.get('tenant_subdomain')
-            if session_tenant and getattr(tenant, 'subdomain', None) != session_tenant:
+            tenant_subdomain = getattr(tenant, 'subdomain', None)
+            if session_tenant and tenant_subdomain != session_tenant:
+                log_auth(
+                    'auth_cleared_tenant_mismatch',
+                    request,
+                    session_tenant=session_tenant,
+                    url_tenant=tenant_subdomain,
+                    session_user_id=request.session.get('_auth_user_id'),
+                )
                 request.user = AnonymousUser()
+            elif request.path.startswith('/h/') and request.session.get('_auth_user_id'):
+                log_auth(
+                    'auth_tenant_ok',
+                    request,
+                    session_tenant=session_tenant,
+                    url_tenant=tenant_subdomain,
+                    session_user_id=request.session.get('_auth_user_id'),
+                    authenticated=getattr(request.user, 'is_authenticated', False),
+                    username=getattr(request.user, 'username', None),
+                )
 
         return self.get_response(request)
 

@@ -321,6 +321,7 @@ LOGGING = {
     'loggers': {
         'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
         'apps': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+        'careu.auth': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
     },
 }
 
