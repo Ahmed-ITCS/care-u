@@ -83,6 +83,18 @@ class TestPlanModules:
         assert 'hr' not in allowed
         assert 'patients' in allowed
 
+    def test_explicit_custom_modules(self, db):
+        connection.set_schema_to_public()
+        plan = SubscriptionPlan.objects.create(
+            name='lab-only-explicit',
+            display_name='Lab Only',
+            features={'modules': ['laboratory'], 'explicit_modules': True},
+        )
+        allowed = resolve_allowed_modules(plan)
+        assert 'laboratory' in allowed
+        assert 'patients' not in allowed
+        assert 'billing' not in allowed
+
 
 @pytest.mark.django_db
 class TestStaffLimit:
@@ -96,6 +108,15 @@ class TestStaffLimit:
             check_staff_limit()
 
     def test_allows_under_limit(self, tenant_with_plan, admin_user):
+        connection.set_tenant(tenant_with_plan)
+        check_staff_limit()
+
+    def test_unlimited_staff_skips_check(self, tenant_with_plan, premium_plan, admin_user, doctor_user):
+        connection.set_schema_to_public()
+        premium_plan.max_users = 0
+        premium_plan.save(update_fields=['max_users'])
+        tenant_with_plan.plan = premium_plan
+        tenant_with_plan.save(update_fields=['plan', 'updated_at'])
         connection.set_tenant(tenant_with_plan)
         check_staff_limit()
 

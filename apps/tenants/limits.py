@@ -14,7 +14,9 @@ BASE_MODULES = frozenset({'core', 'users', 'notifications'})
 
 CORE_PLAN_MODULES = BASE_MODULES | frozenset({'patients', 'appointments', 'clinical', 'billing'})
 
-ALL_PLAN_MODULES = CORE_PLAN_MODULES | frozenset({'laboratory', 'pharmacy', 'hr', 'reports'})
+ALL_PLAN_MODULES = CORE_PLAN_MODULES | frozenset({'laboratory', 'pharmacy', 'hr', 'reports', 'import'})
+
+SELECTABLE_MODULES = sorted(ALL_PLAN_MODULES - BASE_MODULES)
 
 MODULE_LABELS = {
     'patients': 'Patients',
@@ -105,12 +107,15 @@ def resolve_allowed_modules(plan):
     if not plan:
         return ALL_PLAN_MODULES
 
-    modules = (plan.features or {}).get('modules', 'all')
+    features = plan.features or {}
+    modules = features.get('modules', 'all')
     if modules == 'all':
         return ALL_PLAN_MODULES
     if modules == 'core':
         return CORE_PLAN_MODULES
     if isinstance(modules, list):
+        if features.get('explicit_modules'):
+            return BASE_MODULES | frozenset(modules)
         return CORE_PLAN_MODULES | frozenset(modules)
     return ALL_PLAN_MODULES
 
@@ -118,11 +123,11 @@ def resolve_allowed_modules(plan):
 def plan_module_summary(plan):
     """Human-readable module list for pricing/admin UI."""
     allowed = resolve_allowed_modules(plan)
-    premium = allowed - CORE_PLAN_MODULES
-    if not premium and allowed >= CORE_PLAN_MODULES:
-        return 'Core ERP modules'
-    if allowed >= ALL_PLAN_MODULES:
+    modules_config = (plan.features or {}).get('modules')
+    if modules_config == 'all' or allowed >= ALL_PLAN_MODULES:
         return 'All ERP modules'
+    if modules_config == 'core':
+        return 'Core ERP modules'
     names = [MODULE_LABELS.get(m, m.title()) for m in sorted(allowed - BASE_MODULES)]
     return ', '.join(names) if names else 'Core ERP modules'
 
@@ -201,7 +206,7 @@ def get_usage_stats(plan=None):
 
 def check_staff_limit(hospital=None):
     plan = get_active_plan(hospital)
-    if not plan:
+    if not plan or plan.max_users == 0:
         return
     current = count_staff()
     if current >= plan.max_users:
@@ -213,7 +218,7 @@ def check_staff_limit(hospital=None):
 
 def check_patient_limit(hospital=None):
     plan = get_active_plan(hospital)
-    if not plan:
+    if not plan or plan.max_patients == 0:
         return
     current = count_patients()
     if current >= plan.max_patients:

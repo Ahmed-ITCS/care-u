@@ -10,16 +10,30 @@ from django_tenants.models import DomainMixin, TenantMixin
 class SubscriptionPlan(models.Model):
     """SaaS subscription tiers — stored in public schema."""
 
+    SUPPORT_CHOICES = [
+        ('standard', 'Standard support'),
+        ('priority', 'Priority support'),
+        ('dedicated', 'Dedicated account manager'),
+    ]
+
     name = models.SlugField(max_length=50, unique=True, help_text='Internal slug, e.g. premium or acme-hospital')
     display_name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, help_text='Shown on the public pricing page')
     price_monthly = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    max_users = models.PositiveIntegerField(default=10)
-    max_patients = models.PositiveIntegerField(default=1000)
+    max_users = models.PositiveIntegerField(default=10, help_text='0 = unlimited staff')
+    max_patients = models.PositiveIntegerField(default=1000, help_text='0 = unlimited patients')
     features = models.JSONField(default=dict, blank=True)
+    sort_order = models.PositiveIntegerField(default=0, help_text='Lower numbers appear first on pricing')
+    is_featured = models.BooleanField(default=False, help_text='Highlight as “Most popular” on pricing')
+    trial_days = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='Trial length when this plan is assigned (leave blank for non-trial plans)',
+    )
+    support_level = models.CharField(max_length=20, choices=SUPPORT_CHOICES, default='standard')
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['price_monthly']
+        ordering = ['sort_order', 'price_monthly']
 
     def __str__(self):
         return self.display_name
@@ -27,6 +41,15 @@ class SubscriptionPlan(models.Model):
     @property
     def modules_mode(self):
         return (self.features or {}).get('modules', 'all')
+
+    def get_trial_days(self):
+        if self.trial_days is not None:
+            return self.trial_days
+        legacy = (self.features or {}).get('duration_days')
+        return legacy if legacy is not None else 14
+
+    def limit_label(self, value):
+        return 'Unlimited' if value == 0 else str(value)
 
     def module_labels(self):
         from apps.tenants.limits import plan_module_summary
@@ -114,8 +137,11 @@ class Hospital(TenantMixin):
             return (self.trial_ends - timezone.now().date()).days
         return None
 
-    def setup_trial(self, days=14):
+    def setup_trial(self, days=None):
         self.status = 'trial'
+        if days is None and self.plan:
+            days = self.plan.get_trial_days()
+        days = days or 14
         self.trial_ends = timezone.now().date() + timedelta(days=days)
         trial_plan = SubscriptionPlan.objects.filter(name='trial').first()
         if trial_plan:

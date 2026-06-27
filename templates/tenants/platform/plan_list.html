@@ -1,11 +1,11 @@
 {% extends "tenants/platform/base_platform.html" %}
 {% block title %}Subscription Plans — Platform Admin{% endblock %}
 {% block content %}
-<div class="max-w-5xl mx-auto px-6 py-10">
+<div class="max-w-6xl mx-auto px-6 py-10">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div class="page-header mb-0">
             <h1>Subscription Plans</h1>
-            <p>Create custom packages and assign them to hospitals</p>
+            <p>Fully customize pricing, limits, modules, and public pricing display</p>
         </div>
         <a href="{% url 'platform:plan_create' %}" class="btn btn-premium btn-sm">New Plan</a>
     </div>
@@ -15,11 +15,11 @@
             <thead>
                 <tr>
                     <th>Plan</th>
-                    <th>Slug</th>
                     <th>Price/mo</th>
                     <th>Staff</th>
                     <th>Patients</th>
                     <th>Modules</th>
+                    <th>Support</th>
                     <th>Status</th>
                     <th></th>
                 </tr>
@@ -27,12 +27,17 @@
             <tbody>
                 {% for plan in plans %}
                 <tr>
-                    <td class="font-medium">{{ plan.display_name }}</td>
-                    <td class="font-mono text-sm text-base-content/60">{{ plan.name }}</td>
+                    <td>
+                        <div class="font-medium">{{ plan.display_name }}</div>
+                        <div class="text-xs text-base-content/50 font-mono">{{ plan.name }}</div>
+                        {% if plan.is_featured %}<span class="badge badge-primary badge-xs mt-1">Featured</span>{% endif %}
+                        {% if plan.trial_days %}<span class="badge badge-ghost badge-xs mt-1">{{ plan.trial_days }}-day trial</span>{% endif %}
+                    </td>
                     <td>{% if plan.price_monthly == 0 %}Free{% else %}PKR {{ plan.price_monthly|floatformat:0 }}{% endif %}</td>
-                    <td>{{ plan.max_users }}</td>
-                    <td>{{ plan.max_patients }}</td>
-                    <td class="text-sm text-base-content/70 max-w-xs">{{ plan.module_labels }}</td>
+                    <td>{% if plan.max_users == 0 %}Unlimited{% else %}{{ plan.max_users }}{% endif %}</td>
+                    <td>{% if plan.max_patients == 0 %}Unlimited{% else %}{{ plan.max_patients }}{% endif %}</td>
+                    <td class="text-sm text-base-content/70 max-w-[14rem]">{{ plan.module_labels }}</td>
+                    <td class="text-sm">{{ plan.get_support_level_display }}</td>
                     <td>
                         {% if plan.is_active %}
                         <span class="badge badge-success badge-sm">Active</span>
@@ -43,7 +48,7 @@
                     <td><a href="{% url 'platform:plan_edit' plan.pk %}" class="btn btn-ghost btn-xs text-primary">Edit</a></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8" class="text-center py-16 text-base-content/40">No plans yet. Run <code>seed_plans</code> or create one.</td></tr>
+                <tr><td colspan="8" class="text-center py-16 text-base-content/40">No plans yet. Create one or run <code>seed_plans</code>.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

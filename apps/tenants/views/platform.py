@@ -71,7 +71,7 @@ def hospital_detail(request, pk):
         'patients_limit': plan.max_patients if plan else None,
         'modules': plan.module_labels() if plan else '—',
     }
-    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('price_monthly')
+    plans = SubscriptionPlan.objects.filter(is_active=True).order_by('sort_order', 'price_monthly')
     today = timezone.now().date()
     suggested_paid_until = (
         hospital.paid_until if hospital.paid_until and hospital.paid_until >= today
@@ -148,7 +148,7 @@ def hospital_list(request):
 
 @platform_admin_required
 def plan_list(request):
-    plans = SubscriptionPlan.objects.all().order_by('price_monthly')
+    plans = SubscriptionPlan.objects.all().order_by('sort_order', 'price_monthly')
     return render(request, 'tenants/platform/plan_list.html', {
         'plans': plans,
         'platform_user': request.platform_user,
@@ -189,3 +189,20 @@ def plan_edit(request, pk):
         'title': f'Edit {plan.display_name}',
         'platform_user': request.platform_user,
     })
+
+
+@platform_admin_required
+@require_POST
+def plan_delete(request, pk):
+    plan = get_object_or_404(SubscriptionPlan, pk=pk)
+    if plan.hospitals.exists():
+        messages.error(
+            request,
+            f'Cannot delete "{plan.display_name}" — {plan.hospitals.count()} hospital(s) are on this plan. '
+            'Reassign them first or deactivate the plan instead.',
+        )
+    else:
+        name = plan.display_name
+        plan.delete()
+        messages.success(request, f'Plan "{name}" deleted.')
+    return redirect('platform:plans')

@@ -13,9 +13,13 @@ from apps.tenants.auth import resolve_tenant_and_authenticate, admin_email_taken
 from apps.tenants.auth_logging import log_auth, session_snapshot
 
 
+def _active_plans():
+    return SubscriptionPlan.objects.filter(is_active=True).order_by('sort_order', 'price_monthly')
+
+
 def landing(request):
     """Public marketing / landing page."""
-    plans = SubscriptionPlan.objects.filter(is_active=True)
+    plans = _active_plans()
     return render(request, 'tenants/landing.html', {'plans': plans})
 
 
@@ -29,7 +33,7 @@ def hospital_register(request):
                 'An account with this email already exists. Sign in with that email, '
                 'or register using a different admin email.',
             )
-            plans = SubscriptionPlan.objects.filter(is_active=True)
+            plans = _active_plans()
             return render(request, 'tenants/register.html', {'plans': plans})
 
         data = {
@@ -55,7 +59,7 @@ def hospital_register(request):
         except Exception as e:
             messages.error(request, f'Registration failed: {e}')
 
-    plans = SubscriptionPlan.objects.filter(is_active=True)
+    plans = _active_plans()
     return render(request, 'tenants/register.html', {'plans': plans})
 
 
@@ -138,5 +142,5 @@ def suspended(request):
 
 
 def pricing(request):
-    plans = SubscriptionPlan.objects.filter(is_active=True)
+    plans = _active_plans()
     return render(request, 'tenants/pricing.html', {'plans': plans})
