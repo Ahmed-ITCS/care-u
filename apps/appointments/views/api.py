@@ -75,9 +75,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        appointment = serializer.save(booked_by=self.request.user)
-        from apps.appointments.services import create_queue_entry
-        create_queue_entry(appointment)
+        serializer.save(booked_by=self.request.user)
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):

@@ -9,6 +9,15 @@
         <p>Date: {{ visit.visit_date }}</p>
         <p>Doctor: Dr. {{ visit.doctor.get_full_name|default:"-" }}</p>
         <p>Status: {{ visit.get_status_display }}</p>
+        {% if visit.appointment %}
+        <p>Appointment: {{ visit.appointment.scheduled_date }} {{ visit.appointment.scheduled_time }}</p>
+        {% endif %}
+        {% if visit.status == 'in_progress' and request.user.role == 'doctor' %}
+        <form method="post" action="{% url 'clinical:visit_complete' visit.pk %}" class="mt-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Complete Visit</button>
+        </form>
+        {% endif %}
     </div></div>
     {% if visit.opd_details %}
     <div class="card bg-base-100 shadow"><div class="card-body">

@@ -10,12 +10,17 @@
             <p class="font-semibold">{{ entry.appointment.patient.full_name }}</p>
             <p class="text-sm opacity-70">Dr. {{ entry.appointment.doctor.get_full_name }}</p>
             <span class="badge">{{ entry.get_status_display }}</span>
+            {% if entry.status == 'in_consultation' %}
+            <p class="text-sm text-success mt-2">With doctor — completes when visit is finished</p>
+            {% elif entry.status == 'called' %}
+            <p class="text-sm opacity-70 mt-2">Patient called — waiting for doctor</p>
+            {% endif %}
             <form method="post" class="flex gap-2 mt-3">{% csrf_token %}
                 <input type="hidden" name="entry_id" value="{{ entry.pk }}">
                 {% if entry.status == 'waiting' %}
                 <button name="action" value="call" class="btn btn-primary btn-sm">Call</button>
                 {% endif %}
-                {% if entry.status == 'called' %}
+                {% if entry.status == 'called' or entry.status == 'in_consultation' %}
                 <button name="action" value="complete" class="btn btn-accent btn-sm">Complete</button>
                 {% endif %}
             </form>

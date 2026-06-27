@@ -61,6 +61,7 @@ def navigation_context(request):
             {'label': 'Appointments', 'url': 'appointments:list', 'icon': 'calendar'},
             {'label': 'Clinical', 'url': 'clinical:visits', 'icon': 'stethoscope'},
             {'label': 'Laboratory', 'url': 'laboratory:requests', 'icon': 'flask'},
+            {'label': 'Test Catalog', 'url': 'laboratory:catalog', 'icon': 'clipboard'},
             {'label': 'Pharmacy', 'url': 'pharmacy:inventory', 'icon': 'pill'},
             {'label': 'Billing', 'url': 'billing:invoices', 'icon': 'receipt'},
             {'label': 'HR', 'url': 'hr:attendance', 'icon': 'briefcase'},
@@ -112,8 +113,9 @@ def navigation_context(request):
         'lab_tech': [
             {'label': 'Dashboard', 'url': 'core:dashboard', 'icon': 'home'},
             {'label': 'Import Data', 'url': 'core:data_import', 'icon': 'upload'},
+            {'label': 'Test Catalog', 'url': 'laboratory:catalog', 'icon': 'clipboard'},
             {'label': 'Test Requests', 'url': 'laboratory:requests', 'icon': 'flask'},
-            {'label': 'Results', 'url': 'laboratory:results', 'icon': 'clipboard'},
+            {'label': 'Results', 'url': 'laboratory:results', 'icon': 'chart'},
             {'label': 'Leave', 'url': 'hr:leaves', 'icon': 'briefcase'},
         ],
         'patient': [

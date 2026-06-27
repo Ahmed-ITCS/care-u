@@ -14,6 +14,7 @@ from apps.appointments.forms import (
     AppointmentForm, DoctorAvailabilityExceptionForm, DoctorScheduleForm,
 )
 from apps.appointments.models import Appointment, DoctorAvailabilityException, DoctorSchedule, QueueEntry
+from apps.appointments.services import sync_today_appointments_to_queue
 from apps.core.decorators import roles_required
 from apps.core.list_filters import filter_list_context, filters_active
 from apps.users.models import Role, User
@@ -259,6 +260,7 @@ def doctor_calendar(request):
 @login_required
 def queue_board(request):
     today = timezone.now().date()
+    sync_today_appointments_to_queue()
     if request.method == 'POST':
         entry_id = request.POST.get('entry_id')
         action = request.POST.get('action')
@@ -271,11 +273,15 @@ def queue_board(request):
         elif action == 'complete':
             entry.status = 'completed'
             entry.save(update_fields=['status', 'updated_at'])
+            appt = entry.appointment
+            if appt.status not in ('cancelled', 'completed'):
+                appt.status = 'completed'
+                appt.save(update_fields=['status', 'updated_at'])
             messages.success(request, 'Marked as completed.')
         return redirect('appointments:queue')
 
     queue = QueueEntry.objects.filter(
-        created_at__date=today,
+        appointment__scheduled_date=today,
         status__in=['waiting', 'called', 'in_consultation'],
     ).select_related('appointment__patient', 'appointment__doctor')
     return render(request, 'appointments/queue.html', {'queue': queue})

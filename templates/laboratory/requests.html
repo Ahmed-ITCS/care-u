@@ -3,11 +3,25 @@
 {% block content %}{% with page_title="Laboratory Requests" add_url="laboratory:request_create" add_label="New Request" %}{{ block.super }}{% endwith %}{% endblock %}
 {% block table_content %}
 <table class="table table-zebra">
-    <thead><tr><th>Request #</th><th>Patient</th><th>Status</th><th>Date</th></tr></thead>
+    <thead><tr><th>Request #</th><th>Patient</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
     <tbody>
         {% for req in lab_requests %}
-        <tr><td class="font-mono">{{ req.request_number }}</td><td>{{ req.patient.full_name }}</td><td><span class="badge">{{ req.get_status_display }}</span></td><td>{{ req.created_at|date:"M d, Y" }}</td></tr>
-        {% empty %}<tr><td colspan="4" class="text-center py-8">No requests</td></tr>{% endfor %}
+        <tr>
+            <td class="font-mono">{{ req.request_number }}</td>
+            <td>{{ req.patient.full_name }}</td>
+            <td>
+                {% if req.priority == 'stat' %}
+                <span class="badge badge-error badge-sm">STAT</span>
+                {% elif req.priority == 'urgent' %}
+                <span class="badge badge-warning badge-sm">Urgent</span>
+                {% else %}
+                <span class="badge badge-ghost badge-sm">Normal</span>
+                {% endif %}
+            </td>
+            <td><span class="badge">{{ req.get_status_display }}</span></td>
+            <td>{{ req.created_at|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="5" class="text-center py-8">No requests</td></tr>{% endfor %}
     </tbody>
 </table>
 {% endblock %}

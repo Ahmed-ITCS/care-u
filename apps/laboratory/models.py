@@ -37,13 +37,18 @@ class LabTestRequest(TimeStampedModel):
         ('requested', 'Requested'), ('collected', 'Sample Collected'),
         ('in_progress', 'In Progress'), ('completed', 'Completed'), ('cancelled', 'Cancelled'),
     ]
+    PRIORITY_CHOICES = [
+        ('normal', 'Normal'),
+        ('urgent', 'Urgent'),
+        ('stat', 'STAT (Immediate)'),
+    ]
 
     request_number = models.CharField(max_length=20, unique=True, db_index=True)
     patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE, related_name='lab_requests')
     visit = models.ForeignKey('clinical.Visit', on_delete=models.SET_NULL, null=True, blank=True)
     requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='requested', db_index=True)
-    priority = models.CharField(max_length=10, default='normal')
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
     clinical_notes = models.TextField(blank=True)
 
     class Meta:

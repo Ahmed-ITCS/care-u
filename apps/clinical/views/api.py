@@ -85,6 +85,13 @@ class VisitViewSet(viewsets.ModelViewSet):
         return qs
 
     @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        visit = self.get_object()
+        visit.status = 'completed'
+        visit.save(update_fields=['status', 'updated_at'])
+        return Response(VisitSerializer(visit).data)
+
+    @action(detail=True, methods=['post'])
     def opd(self, request, pk=None):
         visit = self.get_object()
         serializer = OPDVisitSerializer(data=request.data)

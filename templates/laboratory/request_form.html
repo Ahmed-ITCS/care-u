@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — {{ platform_name }}{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    {% if back_href %}
+    <a href="{{ back_href }}" class="btn btn-ghost btn-sm mb-4">&larr; Back</a>
+    {% elif back_url %}
+    <a href="{% url back_url %}" class="btn btn-ghost btn-sm mb-4">&larr; Back</a>
+    {% endif %}
+
+    <div class="page-header mb-6">
+        <h1>{{ title }}</h1>
+        <p class="text-base-content/60">Select patient, priority, and the tests to order.</p>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="alert alert-error text-sm">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="premium-card p-6">
+            <h2 class="text-sm font-semibold text-base-content/70 uppercase tracking-wide mb-4">Request details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label py-1" for="{{ form.patient.id_for_label }}">
+                        <span class="label-text font-medium">Patient</span>
+                    </label>
+                    {{ form.patient }}
+                    {% if form.patient.errors %}<p class="text-error text-sm mt-1">{{ form.patient.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="form-control">
+                    <label class="label py-1" for="{{ form.priority.id_for_label }}">
+                        <span class="label-text font-medium">Priority</span>
+                    </label>
+                    {{ form.priority }}
+                    {% if form.priority.errors %}<p class="text-error text-sm mt-1">{{ form.priority.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+            <div class="form-control mt-4">
+                <label class="label py-1" for="{{ form.clinical_notes.id_for_label }}">
+                    <span class="label-text font-medium">Clinical notes</span>
+                    <span class="label-text-alt text-base-content/50">Optional</span>
+                </label>
+                {{ form.clinical_notes }}
+                {% if form.clinical_notes.errors %}<p class="text-error text-sm mt-1">{{ form.clinical_notes.errors.0 }}</p>{% endif %}
+            </div>
+        </div>
+
+        <div class="premium-card p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-semibold text-base-content/70 uppercase tracking-wide">Tests to order</h2>
+                    <p class="text-xs text-base-content/50 mt-1">Select one or more tests from the catalog.</p>
+                </div>
+                <label class="input input-bordered input-sm flex items-center gap-2 w-full sm:w-64">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input type="search" id="test-search" placeholder="Search tests…" class="grow min-w-0" autocomplete="off">
+                </label>
+            </div>
+
+            {% if form.tests.errors %}
+            <div class="alert alert-error text-sm mb-4">{{ form.tests.errors.0 }}</div>
+            {% endif %}
+
+            {% if tests_by_category %}
+            <div id="test-catalog" class="space-y-5 max-h-[28rem] overflow-y-auto pr-1">
+                {% for category, tests in tests_by_category %}
+                <div class="test-category" data-category="{{ category|lower }}">
+                    <h3 class="text-sm font-semibold text-primary mb-2 sticky top-0 bg-base-100 py-1">{{ category }}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {% for test in tests %}
+                        <label class="test-item flex items-start gap-3 p-3 rounded-lg border border-base-300/60 hover:border-primary/40 hover:bg-base-200/40 cursor-pointer transition-colors"
+                               data-search="{{ test.code|lower }} {{ test.name|lower }} {{ category|lower }}">
+                            <input type="checkbox" name="tests" value="{{ test.pk }}"
+                                   class="checkbox checkbox-primary checkbox-sm mt-0.5 shrink-0"
+                                   {% if test.pk in selected_test_ids %}checked{% endif %}>
+                            <span class="min-w-0">
+                                <span class="font-medium text-sm block">{{ test.name }}</span>
+                                <span class="text-xs text-base-content/50 font-mono">{{ test.code }}</span>
+                                {% if test.sample_type %}
+                                <span class="text-xs text-base-content/40 block mt-0.5">{{ test.sample_type }}</span>
+                                {% endif %}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <p id="test-search-empty" class="hidden text-center text-base-content/50 py-8">No tests match your search.</p>
+            {% else %}
+            <p class="text-center text-base-content/50 py-8">No tests in catalog. Add tests in admin first.</p>
+            {% endif %}
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-premium">{{ submit_label|default:"Save" }}</button>
+            {% if back_href %}<a href="{{ back_href }}" class="btn btn-ghost">Cancel</a>
+            {% elif back_url %}<a href="{% url back_url %}" class="btn btn-ghost">Cancel</a>{% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const search = document.getElementById('test-search');
+    const catalog = document.getElementById('test-catalog');
+    const emptyMsg = document.getElementById('test-search-empty');
+    if (!search || !catalog) return;
+
+    search.addEventListener('input', function () {
+        const q = search.value.trim().toLowerCase();
+        let visible = 0;
+        catalog.querySelectorAll('.test-category').forEach(function (section) {
+            let sectionVisible = 0;
+            section.querySelectorAll('.test-item').forEach(function (item) {
+                const match = !q || (item.dataset.search || '').includes(q);
+                item.classList.toggle('hidden', !match);
+                if (match) sectionVisible++;
+            });
+            section.classList.toggle('hidden', sectionVisible === 0);
+            visible += sectionVisible;
+        });
+        if (emptyMsg) emptyMsg.classList.toggle('hidden', visible > 0);
+        catalog.classList.toggle('hidden', visible === 0);
+    });
+})();
+</script>
+{% endblock %}

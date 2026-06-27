@@ -1,0 +1,43 @@
+{% extends "partials/list_page.html" %}
+{% block title %}Test Catalog — {{ platform_name }}{% endblock %}
+{% block content %}{% with page_title="Test Catalog" page_subtitle="Manage laboratory tests available for ordering." add_url="laboratory:test_create" add_label="Add Test" %}{{ block.super }}{% endwith %}{% endblock %}
+{% block table_content %}
+<table class="table table-zebra">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Test</th>
+            <th>Category</th>
+            <th>Sample</th>
+            <th>Price</th>
+            <th>TAT (hrs)</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for test in tests %}
+        <tr>
+            <td class="font-mono text-sm">{{ test.code }}</td>
+            <td>{{ test.name }}</td>
+            <td>{{ test.category.name }}</td>
+            <td>{{ test.sample_type|default:"—" }}</td>
+            <td>PKR {{ test.price }}</td>
+            <td>{{ test.turnaround_hours }}</td>
+            <td>
+                {% if test.is_active %}
+                <span class="badge badge-success badge-sm">Active</span>
+                {% else %}
+                <span class="badge badge-ghost badge-sm">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'laboratory:test_edit' test.pk %}" class="btn btn-ghost btn-xs">Edit</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center py-8 text-base-content/60">No tests in catalog. Add your first test.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

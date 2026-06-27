@@ -28,7 +28,9 @@ def visit_create(request):
     if request.method == 'POST':
         form = VisitForm(request.POST)
         if form.is_valid():
-            visit = form.save()
+            visit = form.save(commit=False)
+            visit.status = 'in_progress'
+            visit.save()
             messages.success(request, f'Visit created for {visit.patient.full_name}.')
             return redirect('clinical:visit_detail', pk=visit.pk)
         messages.error(request, 'Please correct the errors below.')
@@ -47,11 +49,25 @@ def visit_create(request):
 
 @login_required
 def visit_detail(request, pk):
-    visit = get_object_or_404(Visit.objects.select_related('patient', 'doctor'), pk=pk)
+    visit = get_object_or_404(Visit.objects.select_related('patient', 'doctor', 'appointment'), pk=pk)
     if request.user.role == 'doctor' and visit.doctor_id != request.user.pk:
         messages.error(request, 'You can only view your own visits.')
         return redirect('clinical:visits')
     return render(request, 'clinical/visit_detail.html', {'visit': visit})
+
+
+@login_required
+@roles_required('doctor')
+def visit_complete(request, pk):
+    visit = get_object_or_404(Visit, pk=pk)
+    if visit.doctor_id != request.user.pk:
+        messages.error(request, 'You can only complete your own visits.')
+        return redirect('clinical:visits')
+    if request.method == 'POST' and visit.status != 'completed':
+        visit.status = 'completed'
+        visit.save(update_fields=['status', 'updated_at'])
+        messages.success(request, 'Visit completed. Patient removed from queue.')
+    return redirect('clinical:visit_detail', pk=pk)
 
 
 @login_required

@@ -1,14 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from apps.core.decorators import roles_required
 from apps.core.list_filters import filter_list_context
 from apps.clinical.doctor_scope import doctor_can_access_patient, doctor_lab_request_queryset
-from apps.laboratory.filters import LabTestRequestFilter
-from apps.laboratory.forms import LabTestRequestForm
-from apps.laboratory.models import LabTestRequest, LabTestRequestItem
+from apps.laboratory.filters import LabTestRequestFilter, TestCatalogFilter
+from apps.laboratory.forms import LabTestRequestForm, TestCatalogForm, tests_by_category
+from apps.laboratory.models import LabTestRequest, LabTestRequestItem, TestCatalog
 from apps.patients.models import Patient
 
 
@@ -64,11 +64,13 @@ def request_create(request):
         back_href = reverse('patients:detail', kwargs={'pk': initial_patient.pk})
     else:
         back_href = reverse('laboratory:requests')
-    return render(request, 'includes/model_form.html', {
+    return render(request, 'laboratory/request_form.html', {
         'form': form,
         'title': 'New Lab Request',
         'back_href': back_href,
         'submit_label': 'Submit Request',
+        'tests_by_category': tests_by_category(),
+        'selected_test_ids': form.selected_test_ids(),
     })
 
 
@@ -82,3 +84,56 @@ def result_list(request):
     )
     ctx['lab_requests'] = ctx.pop('items')
     return render(request, 'laboratory/results.html', ctx)
+
+
+@login_required
+@roles_required('lab_tech', 'admin')
+def catalog_list(request):
+    queryset = TestCatalog.objects.select_related('category').order_by('category__name', 'name')
+    ctx = filter_list_context(
+        request, queryset, TestCatalogFilter, limit=100, clear_url=reverse('laboratory:catalog'),
+    )
+    ctx['tests'] = ctx.pop('items')
+    return render(request, 'laboratory/catalog.html', ctx)
+
+
+@login_required
+@roles_required('lab_tech', 'admin')
+def test_create(request):
+    if request.method == 'POST':
+        form = TestCatalogForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Test {form.instance.code} added to catalog.')
+            return redirect('laboratory:catalog')
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TestCatalogForm()
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': 'Add Lab Test',
+        'subtitle': 'New tests appear immediately when ordering labs.',
+        'back_url': 'laboratory:catalog',
+        'submit_label': 'Add Test',
+    })
+
+
+@login_required
+@roles_required('lab_tech', 'admin')
+def test_edit(request, pk):
+    test = get_object_or_404(TestCatalog, pk=pk)
+    if request.method == 'POST':
+        form = TestCatalogForm(request.POST, instance=test)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Test {test.code} updated.')
+            return redirect('laboratory:catalog')
+        messages.error(request, 'Please correct the errors below.')
+    else:
+        form = TestCatalogForm(instance=test)
+    return render(request, 'includes/model_form.html', {
+        'form': form,
+        'title': f'Edit {test.code}',
+        'back_url': 'laboratory:catalog',
+        'submit_label': 'Save Changes',
+    })

@@ -7,4 +7,4 @@ class AppointmentsConfig(AppConfig):
     verbose_name = 'Appointments'
 
     def ready(self):
-        pass
+        import apps.appointments.signals  # noqa: F401
