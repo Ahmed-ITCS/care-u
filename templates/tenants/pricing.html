@@ -1,11 +1,11 @@
 {% extends "tenants/base_public.html" %}
-{% block title %}Pricing — {{ platform_name }}{% endblock %}
+{% block title %}Plans — {{ platform_name }}{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 py-20">
     <div class="text-center mb-16">
-        <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Pricing</p>
+        <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Plans</p>
         <h1 class="text-3xl md:text-5xl font-bold tracking-tight">Plans for Every Hospital</h1>
-        <p class="text-base-content/60 mt-4 max-w-xl mx-auto">Choose the package that fits your hospital. Upgrade anytime as you grow.</p>
+        <p class="text-base-content/60 mt-4 max-w-xl mx-auto">Choose the package that fits your hospital. Contact us for pricing — upgrade anytime as you grow.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -19,11 +19,7 @@
             <div class="h-6 mb-4"></div>
             {% endif %}
             <h2 class="text-xl font-bold">{{ plan.display_name }}</h2>
-            <p class="text-3xl font-bold text-primary mt-3 mb-1">
-                {% if plan.price_monthly == 0 %}Free{% else %}PKR {{ plan.price_monthly|floatformat:0 }}{% endif %}
-            </p>
-            <p class="text-xs text-base-content/50 mb-4">per month</p>
-            <p class="text-sm text-base-content/60 mb-6 min-h-[3rem]">
+            <p class="text-sm text-base-content/60 mb-6 min-h-[3rem] mt-4">
                 {{ plan.description|default:plan.module_labels }}
             </p>
             <ul class="text-sm space-y-3 text-base-content/70 text-left mb-8">
@@ -53,7 +49,7 @@
             </a>
         </div>
         {% empty %}
-        <p class="col-span-full text-center text-base-content/50">Pricing plans coming soon.</p>
+        <p class="col-span-full text-center text-base-content/50">Plans coming soon.</p>
         {% endfor %}
     </div>
 </div>
