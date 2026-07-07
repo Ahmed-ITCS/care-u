@@ -1,58 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — {{ platform_name }}{% endblock %}
 {% block content %}
-<div class="page-header flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+
+<!-- Page header -->
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
     <div>
-        <h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
-        <p>{{ role_label|default:user.get_role_display }} · {% now "l, F j, Y" %}</p>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-1" style="color: rgba(99,102,241,0.8);">Overview</p>
+        <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:-0.03em;line-height:1.15;color:var(--fallback-bc,oklch(var(--bc)));">
+            Welcome back, {{ user.first_name|default:user.username }}
+        </h1>
+        <p class="mt-1 text-sm" style="color:rgba(0,0,0,0.4);">
+            <span class="font-medium">{{ role_label|default:user.get_role_display }}</span>
+            <span class="mx-2 opacity-40">·</span>
+            {% now "l, F j, Y" %}
+        </p>
     </div>
     {% if role == 'admin' or role == 'receptionist' %}
-    <a href="{% url 'patients:register' %}" class="btn btn-premium btn-sm">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+    <a href="{% url 'patients:register' %}" class="btn-premium btn-sm gap-2 inline-flex items-center">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
         New Patient
     </a>
     {% elif role == 'doctor' %}
-    <a href="{% url 'appointments:doctor_calendar' %}" class="btn btn-premium btn-sm">My Calendar</a>
+    <a href="{% url 'appointments:doctor_calendar' %}" class="btn-premium btn-sm inline-flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        My Calendar
+    </a>
     {% elif role == 'nurse' %}
-    <a href="{% url 'hr:my_roster' %}" class="btn btn-premium btn-sm">My Shifts</a>
+    <a href="{% url 'hr:my_roster' %}" class="btn-premium btn-sm inline-flex items-center gap-2">My Shifts</a>
     {% elif role == 'lab_tech' %}
-    <a href="{% url 'laboratory:requests' %}" class="btn btn-premium btn-sm">Lab Requests</a>
+    <a href="{% url 'laboratory:requests' %}" class="btn-premium btn-sm inline-flex items-center gap-2">Lab Requests</a>
     {% elif role == 'pharmacist' %}
-    <a href="{% url 'pharmacy:dispense' %}" class="btn btn-premium btn-sm">Dispense Queue</a>
+    <a href="{% url 'pharmacy:dispense' %}" class="btn-premium btn-sm inline-flex items-center gap-2">Dispense Queue</a>
     {% elif role == 'patient' %}
-    <a href="{% url 'appointments:my_appointments' %}" class="btn btn-premium btn-sm">My Appointments</a>
+    <a href="{% url 'appointments:my_appointments' %}" class="btn-premium btn-sm inline-flex items-center gap-2">My Appointments</a>
     {% endif %}
 </div>
 
+<!-- Stat cards -->
 {% if stat_cards %}
-<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
     {% for card in stat_cards %}
     <div class="stat-card text-{{ card.tone }}">
         <div class="stat-icon bg-{{ card.tone }}/10 text-{{ card.tone }}">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
         </div>
-        <p class="text-sm text-base-content/50 font-medium">{{ card.label }}</p>
-        <p class="text-3xl font-bold mt-1">
-            {% if card.format == 'currency' %}PKR {{ card.value|floatformat:0 }}{% else %}{{ card.value|default:0 }}{% endif %}
+        <p class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:rgba(0,0,0,0.4);">{{ card.label }}</p>
+        <p class="font-extrabold leading-none" style="font-size:2rem;letter-spacing:-0.03em;">
+            {% if card.format == 'currency' %}
+            <span class="text-sm font-semibold align-top mt-1.5 mr-0.5" style="font-size:0.875rem;">PKR</span>{{ card.value|floatformat:0 }}
+            {% else %}
+            {{ card.value|default:0 }}
+            {% endif %}
         </p>
     </div>
     {% endfor %}
 </div>
 {% else %}
-<div class="premium-card p-8 mb-8 text-center text-base-content/50">
-    <p>No dashboard metrics are configured for your role yet.</p>
+<div class="premium-card p-10 mb-8 text-center" style="color:rgba(0,0,0,0.3);">
+    <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/>
+    </svg>
+    <p class="text-sm font-medium">No dashboard metrics configured for your role yet.</p>
 </div>
 {% endif %}
 
+<!-- Doctor: outstanding bills -->
 {% if role == 'doctor' %}
-<div class="premium-card mb-8" id="outstanding-bills">
-    <div class="p-6 border-b border-base-300/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div class="premium-card mb-6">
+    <div class="card-header">
         <div>
-            <h2 class="font-bold text-lg">My Patients with Outstanding Bills</h2>
-            <p class="text-sm text-base-content/50">Patients in your care who still have unpaid balances.</p>
+            <h2 class="font-bold text-base leading-tight">Outstanding Bills — My Patients</h2>
+            <p class="text-xs mt-0.5" style="color:rgba(0,0,0,0.4);">Patients in your care with unpaid balances</p>
         </div>
         {% if doctor_outstanding_bills %}
-        <a href="{% url 'patients:list' %}?outstanding=1" class="btn btn-outline btn-sm">View all</a>
+        <a href="{% url 'patients:list' %}?outstanding=1"
+           class="btn btn-outline btn-xs gap-1" style="border-radius:0.5rem;">
+            View all
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
         {% endif %}
     </div>
     <div class="overflow-x-auto">
@@ -60,7 +87,7 @@
             <thead>
                 <tr>
                     <th>Patient</th>
-                    <th>MR Number</th>
+                    <th>MR #</th>
                     <th>Total Billed</th>
                     <th>Paid</th>
                     <th>Balance Due</th>
@@ -70,19 +97,23 @@
             <tbody>
                 {% for row in doctor_outstanding_bills %}
                 <tr>
-                    <td class="font-medium">{{ row.patient.full_name }}</td>
-                    <td class="font-mono text-sm">{{ row.patient.mr_number }}</td>
-                    <td>PKR {{ row.total_billed }}</td>
-                    <td class="text-success">PKR {{ row.total_paid }}</td>
-                    <td class="font-semibold text-error">PKR {{ row.balance_due }}</td>
+                    <td class="font-semibold text-sm">{{ row.patient.full_name }}</td>
+                    <td class="font-mono text-xs text-base-content/50">{{ row.patient.mr_number }}</td>
+                    <td class="text-sm">PKR {{ row.total_billed }}</td>
+                    <td class="text-sm font-medium" style="color:#059669;">PKR {{ row.total_paid }}</td>
+                    <td class="text-sm font-bold" style="color:#E11D48;">PKR {{ row.balance_due }}</td>
                     <td>
-                        <a href="{% url 'patients:detail' row.patient.pk %}#billing" class="btn btn-ghost btn-xs text-primary">View billing →</a>
+                        <a href="{% url 'patients:detail' row.patient.pk %}#billing"
+                           class="btn btn-ghost btn-xs text-primary" style="border-radius:0.5rem;">
+                            View →
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center py-12 text-base-content/40">
-                        No outstanding bills for your patients.
+                    <td colspan="6" class="text-center py-16" style="color:rgba(0,0,0,0.3);">
+                        <svg class="w-8 h-8 mx-auto mb-2 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-sm font-medium">No outstanding bills for your patients.</p>
                     </td>
                 </tr>
                 {% endfor %}
@@ -92,40 +123,100 @@
 </div>
 {% endif %}
 
+<!-- Admin / Accountant: charts -->
 {% if role == 'admin' or role == 'accountant' %}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     <div class="premium-card">
-        <div class="p-6 border-b border-base-300/50">
-            <h2 class="font-bold text-lg">Revenue Trend</h2>
-            <p class="text-sm text-base-content/50">Last 30 days</p>
+        <div class="card-header">
+            <div>
+                <h2 class="font-bold text-base leading-tight">Revenue Trend</h2>
+                <p class="text-xs mt-0.5" style="color:rgba(0,0,0,0.4);">Last 30 days</p>
+            </div>
         </div>
-        <div class="p-6"><canvas id="revenueChart" height="200"></canvas></div>
+        <div class="p-5"><canvas id="revenueChart" height="200"></canvas></div>
     </div>
     <div class="premium-card">
-        <div class="p-6 border-b border-base-300/50">
-            <h2 class="font-bold text-lg">Appointment Status</h2>
-            <p class="text-sm text-base-content/50">Current distribution</p>
+        <div class="card-header">
+            <div>
+                <h2 class="font-bold text-base leading-tight">Appointment Status</h2>
+                <p class="text-xs mt-0.5" style="color:rgba(0,0,0,0.4);">Current distribution</p>
+            </div>
         </div>
-        <div class="p-6 flex justify-center"><canvas id="appointmentChart" height="200" style="max-width:280px"></canvas></div>
+        <div class="p-5 flex justify-center">
+            <canvas id="appointmentChart" height="200" style="max-width:260px"></canvas>
+        </div>
     </div>
 </div>
 {% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
 {% if role == 'admin' or role == 'accountant' %}
 <script>
-const chartDefaults = { responsive: true, plugins: { legend: { labels: { font: { family: 'Plus Jakarta Sans' } } } } } };
-function renderChart(canvasId, chartData, type='line') {
+Chart.defaults.font.family = '"Plus Jakarta Sans", ui-sans-serif, system-ui';
+Chart.defaults.font.size = 12;
+
+const isDark = document.documentElement.getAttribute('data-theme') === 'gph-dark';
+const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+const labelColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+
+function renderChart(canvasId, chartData, type = 'line') {
+    const doughnutColors = ['#4F46E5', '#0891B2', '#059669', '#D97706', '#E11D48'];
     new Chart(document.getElementById(canvasId), {
-        type, data: {
+        type,
+        data: {
             labels: chartData.labels,
-            datasets: [{ label: canvasId, data: chartData.values,
-                borderColor: '#1E40AF', backgroundColor: type === 'doughnut' ? ['#1E40AF','#059669','#D97706','#DC2626'] : 'rgba(30,64,175,0.08)',
-                borderWidth: 2, tension: 0.4, fill: type === 'line', borderRadius: type === 'bar' ? 6 : 0 }]
-        }, options: { ...chartDefaults, plugins: { legend: { display: type === 'doughnut' } }, scales: type !== 'doughnut' ? { y: { grid: { color: 'rgba(0,0,0,0.05)' } }, x: { grid: { display: false } } } : {} }
+            datasets: [{
+                label: '',
+                data: chartData.values,
+                borderColor: '#4F46E5',
+                backgroundColor: type === 'doughnut'
+                    ? doughnutColors
+                    : 'rgba(79,70,229,0.07)',
+                borderWidth: type === 'doughnut' ? 0 : 2,
+                tension: 0.4,
+                fill: type === 'line',
+                pointBackgroundColor: '#4F46E5',
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                borderRadius: type === 'bar' ? 6 : 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: type === 'doughnut',
+                    labels: { color: labelColor, padding: 16, usePointStyle: true, pointStyleWidth: 8 }
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(15,22,38,0.95)' : 'rgba(255,255,255,0.98)',
+                    titleColor: isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.8)',
+                    bodyColor: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)',
+                    borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)',
+                    borderWidth: 1,
+                    cornerRadius: 10,
+                    padding: 12,
+                    boxPadding: 4,
+                }
+            },
+            scales: type !== 'doughnut' ? {
+                y: {
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: labelColor, padding: 8 },
+                    border: { display: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: labelColor, padding: 8 },
+                    border: { display: false }
+                }
+            } : {}
+        }
     });
 }
+
 renderChart('revenueChart', {{ revenue_chart_json|safe }});
 renderChart('appointmentChart', {{ appointment_chart_json|safe }}, 'doughnut');
 </script>
