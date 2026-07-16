@@ -12,7 +12,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-base-200 min-h-screen font-sans flex flex-col">
+<body class="public-site bg-base-200 min-h-screen font-sans flex flex-col">
     <header class="public-navbar">
         <div class="navbar max-w-7xl mx-auto min-h-[4.5rem]">
             <div class="flex-1">
@@ -81,5 +81,34 @@
             &copy; 2026 {{ platform_name }}. All rights reserved.
         </div>
     </footer>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        var header = document.querySelector('.public-navbar');
+        if (header) {
+          var onScroll = function () {
+            header.classList.toggle('scrolled', window.scrollY > 8);
+          };
+          onScroll();
+          window.addEventListener('scroll', onScroll, { passive: true });
+        }
+
+        var els = document.querySelectorAll('.reveal');
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!('IntersectionObserver' in window) || reduce) {
+          els.forEach(function (e) { e.classList.add('is-visible'); });
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) {
+              en.target.classList.add('is-visible');
+              io.unobserve(en.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+        els.forEach(function (e) { io.observe(e); });
+      });
+    </script>
 </body>
 </html>

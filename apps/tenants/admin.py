@@ -1,5 +1,7 @@
 from django.contrib import admin
-from apps.tenants.models import Hospital, Domain, PlatformUser, SubscriptionPlan, HospitalRegistration
+from apps.tenants.models import (
+    Hospital, Domain, PlatformUser, SubscriptionPlan, HospitalRegistration, DemoRequest,
+)
 
 
 @admin.register(Hospital)
@@ -31,3 +33,13 @@ class SubscriptionPlanAdmin(admin.ModelAdmin):
 class HospitalRegistrationAdmin(admin.ModelAdmin):
     list_display = ('hospital_name', 'subdomain', 'admin_email', 'is_processed', 'created_at')
     list_filter = ('is_processed',)
+
+
+@admin.register(DemoRequest)
+class DemoRequestAdmin(admin.ModelAdmin):
+    list_display = ('hospital_name', 'name', 'email', 'phone', 'team_size', 'status', 'created_at')
+    list_filter = ('status', 'source', 'created_at')
+    search_fields = ('hospital_name', 'name', 'email', 'phone')
+    list_editable = ('status',)
+    readonly_fields = ('created_at', 'source')
+    date_hierarchy = 'created_at'

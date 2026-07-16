@@ -1,10 +1,14 @@
 {% extends "tenants/base_public.html" %}
-{% block title %}{{ platform_name }} — Hospital Management Platform{% endblock %}
+{% load static %}
+{% block title %}{{ platform_name }} — Complete Hospital Management ERP{% endblock %}
 {% block content %}
+
+<div x-data="{ bookOpen: {{ demo_form_open|yesno:'true,false' }}, lightbox: null }"
+     @keydown.escape.window="bookOpen = false; lightbox = null">
 
 <!-- Hero -->
 <section class="hero-mesh hero-gradient text-white relative">
-    <div class="max-w-7xl mx-auto px-6 py-24 md:py-32 relative z-10">
+    <div class="max-w-7xl mx-auto px-6 py-24 md:py-28 relative z-10">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div class="animate-slide-up">
                 <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm mb-6 border border-white/20">
@@ -12,42 +16,83 @@
                     Trusted by hospitals across the world
                 </div>
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-6">
-                    The Complete<br>
-                    <span class="text-emerald-300">{{ platform_name }}</span> Platform
+                    Complete Hospital<br>
+                    Management <span class="text-teal-300">ERP</span>
                 </h1>
                 <p class="text-lg md:text-xl text-white/75 leading-relaxed mb-8 max-w-xl">
-                    Patients, Appointments, OPD/IPD, Lab, Pharmacy, Billing, HR & more all in one secure cloud platform.
-                    Each hospital gets its own isolated environment.
+                    Manage OPD, IPD, Pharmacy, Laboratory, Billing, Token Queue, EMR, Inventory, HR and Analytics —
+                    all from one secure platform. Each hospital gets its own isolated environment.
                 </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="{% url 'tenants:register' %}" class="btn btn-accent btn-lg shadow-lg shadow-emerald-500/30 border-0 font-semibold">
-                        Start 14-Day Free Trial
+                <div class="flex flex-wrap items-center gap-4">
+                    <button type="button" @click="bookOpen = true"
+                            class="btn btn-accent btn-lg shadow-lg shadow-emerald-500/30 border-0 font-semibold">
+                        Book a Demo
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                    </button>
+                    <a href="{% url 'tenants:register' %}"
+                       class="btn btn-lg btn-outline text-white border-white/30 hover:bg-white/10 hover:border-white/50 font-semibold">
+                        Start Free Trial
                     </a>
                 </div>
-                <div class="flex flex-wrap gap-8 mt-12 pt-8 border-t border-white/15">
-                    <div><p class="text-3xl font-bold">12+</p><p class="text-sm text-white/50">Modules</p></div>
-                    <div><p class="text-3xl font-bold">100%</p><p class="text-sm text-white/50">Data Isolation</p></div>
-                    <div><p class="text-3xl font-bold">24/7</p><p class="text-sm text-white/50">Cloud Access</p></div>
+                <p class="text-sm text-white/50 mt-4">14-day free trial — no card required.</p>
+                <div class="flex flex-wrap items-center gap-2 mt-6">
+                    <span class="trust-pill"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>TLS 1.3 Encrypted</span>
+                    <span class="trust-pill"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Daily Backups</span>
+                    <span class="trust-pill"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>99.9% Uptime</span>
+                    <span class="trust-pill"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>HIPAA-Aware</span>
                 </div>
             </div>
+
+            <!-- Dashboard screenshot (drop static/img/screenshots/dashboard.png to replace the mockup) -->
             <div class="hidden lg:block relative animate-float">
-                <div class="premium-card bg-white/10 backdrop-blur-xl border border-white/20 p-6 shadow-premium-lg">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/10 rounded-xl p-4 border border-white/10">
-                            <p class="text-xs text-white/50 mb-1">Patients Today</p>
-                            <p class="text-2xl font-bold">248</p>
-                        </div>
-                        <div class="bg-white/10 rounded-xl p-4 border border-white/10">
-                            <p class="text-xs text-white/50 mb-1">Appointments</p>
-                            <p class="text-2xl font-bold text-emerald-300">32 today</p>
-                        </div>
-                        <div class="bg-white/10 rounded-xl p-4 border border-white/10 col-span-2">
-                            <p class="text-xs text-white/50 mb-2">Appointment Queue</p>
-                            <div class="space-y-2">
-                                <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-emerald-400"></div><span class="text-sm">Dr. Ahmed — OPD Room 3</span></div>
-                                <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-blue-400"></div><span class="text-sm">Lab — 12 pending samples</span></div>
+                <div class="rounded-2xl overflow-hidden shadow-premium-xl border border-white/10 bg-[#0B0E18]">
+                    <!-- browser chrome -->
+                    <div class="flex items-center gap-1.5 px-4 py-3 bg-[#0F1626] border-b border-white/5">
+                        <span class="w-3 h-3 rounded-full bg-red-400/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-400/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-400/80"></span>
+                        <div class="mx-auto text-[11px] text-white/40 bg-white/5 rounded-md px-3 py-1 tracking-wide">app.{{ platform_name|lower }}.com/dashboard</div>
+                    </div>
+                    <!-- Animated live dashboard preview -->
+                    <div class="bg-[#0B0E18] p-5" x-data="heroPreview()" x-init="start()">
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+                                <p class="text-[10px] text-white/40">Patients Today</p>
+                                <p class="text-xl font-bold text-white" x-text="fmt('patients', disp.patients)">0</p>
                             </div>
+                            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+                                <p class="text-[10px] text-white/40">Current Queue</p>
+                                <p class="text-xl font-bold text-cyan-300" x-text="fmt('queue', disp.queue)">0</p>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+                                <p class="text-[10px] text-white/40">Revenue Today</p>
+                                <p class="text-xl font-bold text-emerald-300" x-text="fmt('revenue', disp.revenue)">0</p>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-3 border border-white/10">
+                                <p class="text-[10px] text-white/40">Bed Occupancy</p>
+                                <p class="text-xl font-bold text-teal-300" x-text="fmt('occ', disp.occ)">0</p>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 border border-white/10 mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-[10px] text-white/40">Weekly OPD Volume</p>
+                                <span class="text-[10px] text-teal-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-teal-300 animate-pulse"></span>Live</span>
+                            </div>
+                            <svg viewBox="0 0 300 90" class="w-full h-24" preserveAspectRatio="none" x-bind:class="drawn ? 'in' : ''">
+                                <defs>
+                                    <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#0E5AA7" stop-opacity="0.35"/>
+                                        <stop offset="100%" stop-color="#0E5AA7" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path class="hero-area" d="M0,70 L42,55 L85,62 L128,40 L171,48 L214,28 L257,36 L300,18 L300,90 L0,90 Z" fill="url(#heroFill)"/>
+                                <path class="hero-line" d="M0,70 L42,55 L85,62 L128,40 L171,48 L214,28 L257,36 L300,18" fill="none" stroke="#2DD4BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-4 border border-white/10 space-y-2">
+                            <p class="text-[10px] text-white/40 mb-1">Live Token Queue</p>
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-sm text-white/80">A-014 — Dr. Ahmed, OPD Room 3</span></div>
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span><span class="text-sm text-white/80">Lab — 12 pending samples</span></div>
                         </div>
                     </div>
                 </div>
@@ -56,8 +101,87 @@
     </div>
 </section>
 
+<script>
+  function heroPreview() {
+    return {
+      target: { patients: 248, queue: 12, revenue: 1200000, occ: 76 },
+      disp:   { patients: 0, queue: 0, revenue: 0, occ: 0 },
+      drawn: false,
+      fmt(key, v) {
+        v = Math.round(v);
+        if (key === 'revenue') return '₨ ' + (v / 1000000).toFixed(1) + 'M';
+        if (key === 'occ') return v + '%';
+        return v.toLocaleString();
+      },
+      start() {
+        var self = this, dur = 1500, t0 = null;
+        function step(ts) {
+          if (!t0) t0 = ts;
+          var p = Math.min(1, (ts - t0) / dur);
+          var e = 1 - Math.pow(1 - p, 3);
+          for (var k in self.target) { self.disp[k] = self.target[k] * e; }
+          if (p < 1) requestAnimationFrame(step);
+          else { for (var k in self.target) { self.disp[k] = self.target[k]; } }
+        }
+        requestAnimationFrame(step);
+        setTimeout(function () { self.drawn = true; }, 350);
+      }
+    };
+  }
+</script>
+
+<!-- Key metrics band -->
+<section class="bg-base-100 border-b border-base-300/60">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <p class="text-4xl font-extrabold text-primary tracking-tight">12+</p>
+                <p class="text-sm text-base-content/60 mt-1">Integrated Modules</p>
+            </div>
+            <div>
+                <p class="text-4xl font-extrabold text-primary tracking-tight">100%</p>
+                <p class="text-sm text-base-content/60 mt-1">Data Isolation per Hospital</p>
+            </div>
+            <div>
+                <p class="text-4xl font-extrabold text-primary tracking-tight">&lt;5<span class="text-2xl"> min</span></p>
+                <p class="text-sm text-base-content/60 mt-1">Setup Time</p>
+            </div>
+            <div>
+                <p class="text-4xl font-extrabold text-primary tracking-tight">24/7</p>
+                <p class="text-sm text-base-content/60 mt-1">Secure Cloud Access</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trusted by hospitals -->
+<section class="bg-base-200/60 py-14">
+    <div class="max-w-7xl mx-auto px-6">
+        <p class="text-center text-sm font-semibold uppercase tracking-widest text-base-content/40 mb-8">
+            Trusted by hospitals &amp; clinics
+        </p>
+        <!-- Drop logos in static/img/logos/hospital-1.png … hospital-5.png. Missing ones show a neutral placeholder. -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
+            {% for i in "12345" %}
+            <div class="flex items-center justify-center h-16 rounded-xl bg-base-100 border border-base-300/50 px-4">
+                <img src="{{ STATIC_URL }}img/logos/hospital-{{ forloop.counter }}.png" alt="Partner hospital {{ forloop.counter }}"
+                     class="max-h-8 w-auto opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display:none;" class="items-center gap-2 text-base-content/30">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1"/></svg>
+                    <span class="text-xs font-medium">Your Hospital</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-center text-xs text-base-content/40 mt-6">
+            Add your hospital to the network — <a href="{% url 'tenants:register' %}" class="text-primary hover:underline">register free</a>.
+        </p>
+    </div>
+</section>
+
 <!-- Features -->
-<section class="py-20 md:py-28 bg-base-100">
+<section class="py-20 md:py-28 bg-base-100 reveal">
     <div class="max-w-7xl mx-auto px-6">
         <div class="text-center mb-16">
             <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Everything included</p>
@@ -65,38 +189,17 @@
             <p class="text-base-content/60 mt-4 max-w-2xl mx-auto">From patient registration to payroll — every module your hospital needs, beautifully integrated.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for feat in features %}
-            <div class="feature-card">
-                <div class="feature-icon">
-                    {% if feat.icon == 'patient' %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    {% elif feat.icon == 'clinical' %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                    {% elif feat.icon == 'billing' %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                    {% elif feat.icon == 'lab' %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                    {% elif feat.icon == 'pharmacy' %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-                    {% else %}
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    {% endif %}
-                </div>
-                <h3 class="font-bold text-lg mb-2">{{ feat.title }}</h3>
-                <p class="text-base-content/60 text-sm leading-relaxed">{{ feat.desc }}</p>
-            </div>
-            {% empty %}
             <!-- Patient & EHR -->
             <div class="feature-card">
                 <div class="feature-icon"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
-                <h3 class="font-bold text-lg mb-2">Patient Records & EHR</h3>
+                <h3 class="font-bold text-lg mb-2">Patient Records & EMR</h3>
                 <p class="text-base-content/60 text-sm leading-relaxed">Registration, MR numbers, vitals, allergies, chronic conditions, family & medical history, insurance, and document uploads.</p>
             </div>
-            <!-- Appointments -->
+            <!-- Appointments & Token Queue -->
             <div class="feature-card">
                 <div class="feature-icon"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
-                <h3 class="font-bold text-lg mb-2">Appointments & Queue</h3>
-                <p class="text-base-content/60 text-sm leading-relaxed">Doctor scheduling, availability management, appointment types, live OPD queue, and walk-in flow.</p>
+                <h3 class="font-bold text-lg mb-2">Appointments & Token Queue</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Doctor scheduling, availability management, appointment types, live OPD token queue, and walk-in flow.</p>
             </div>
             <!-- Clinical & IPD -->
             <div class="feature-card">
@@ -110,10 +213,10 @@
                 <h3 class="font-bold text-lg mb-2">Billing & Insurance</h3>
                 <p class="text-base-content/60 text-sm leading-relaxed">Service catalog, invoices, payments, insurance claims, refunds, and a full ledger — all linked to patient visits.</p>
             </div>
-            <!-- Pharmacy -->
+            <!-- Pharmacy & Inventory -->
             <div class="feature-card">
                 <div class="feature-icon"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg></div>
-                <h3 class="font-bold text-lg mb-2">Pharmacy</h3>
+                <h3 class="font-bold text-lg mb-2">Pharmacy & Inventory</h3>
                 <p class="text-base-content/60 text-sm leading-relaxed">Drug catalog, batch & expiry tracking, stock movements, purchase orders, supplier management, and prescription dispensing.</p>
             </div>
             <!-- Laboratory -->
@@ -128,7 +231,7 @@
                 <h3 class="font-bold text-lg mb-2">HR, Shifts & Payroll</h3>
                 <p class="text-base-content/60 text-sm leading-relaxed">Staff shift scheduling, roster management, attendance, leave requests, payroll runs, and doctor commission tracking.</p>
             </div>
-            <!-- Reports -->
+            <!-- Analytics -->
             <div class="feature-card">
                 <div class="feature-icon"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
                 <h3 class="font-bold text-lg mb-2">Reports & Analytics</h3>
@@ -140,7 +243,403 @@
                 <h3 class="font-bold text-lg mb-2">Multi-Tenant Security</h3>
                 <p class="text-base-content/60 text-sm leading-relaxed">PostgreSQL schema isolation per hospital. Your data never mixes with other hospitals. Role-based access control included.</p>
             </div>
-            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Trust & Security -->
+<section class="py-20 md:py-28 bg-base-200/50 border-y border-base-300/60 reveal">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Built on trust</p>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Security &amp; Compliance Hospitals Rely On</h2>
+            <p class="text-base-content/60 mt-4 max-w-2xl mx-auto">Your patients' data is the most sensitive asset you hold. {{ platform_name }} is engineered to protect it at every layer.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Data security -->
+            <div class="trust-card">
+                <div class="trust-icon text-emerald-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">Data Security</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">PostgreSQL schema isolation keeps every hospital's records fully segregated. Your data never touches another tenant.</p>
+            </div>
+            <!-- Encryption -->
+            <div class="trust-card">
+                <div class="trust-icon text-indigo-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">End-to-End Encryption</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">All data is encrypted in transit (TLS 1.3) and at rest (AES-256), including backups and exports.</p>
+            </div>
+            <!-- Backups -->
+            <div class="trust-card">
+                <div class="trust-icon text-cyan-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">Automated Backups</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Encrypted daily backups with point-in-time recovery, so you can restore any record in minutes.</p>
+            </div>
+            <!-- User permissions -->
+            <div class="trust-card">
+                <div class="trust-icon text-violet-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">Granular Permissions</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Role-based access from receptionist to chief of medicine — every screen and action scoped to the user's role.</p>
+            </div>
+            <!-- Audit logs -->
+            <div class="trust-card">
+                <div class="trust-icon text-amber-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">Tamper-Proof Audit Logs</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Every login, edit, and prescription is traced with who, what, and when — a complete compliance-ready trail.</p>
+            </div>
+            <!-- Deployment -->
+            <div class="trust-card">
+                <div class="trust-icon text-rose-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>
+                </div>
+                <h3 class="font-bold text-base mb-1.5">Cloud or On-Premise</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Run on our secure managed cloud, or deploy inside your own hospital infrastructure — you stay in control of the data.</p>
+            </div>
+        </div>
+
+        <!-- Support strip -->
+        <div class="mt-8 premium-card flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-5">
+            <div class="flex items-center gap-3">
+                <div class="trust-icon text-primary !mb-0">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </div>
+                <div>
+                    <p class="font-semibold leading-tight">24/7 Dedicated Support</p>
+                    <p class="text-sm text-base-content/60">Real healthcare IT specialists, not a bot — onboarding, training, and emergencies.</p>
+                </div>
+            </div>
+            <a href="{% url 'tenants:register' %}" class="btn btn-accent border-0 font-semibold whitespace-nowrap">Talk to Our Team</a>
+        </div>
+    </div>
+</section>
+
+<!-- Product screenshots gallery -->
+<section class="py-20 md:py-28 bg-base-100 border-t border-base-300/60 reveal">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Take a closer look</p>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight">A Complete View of Your Hospital</h2>
+            <p class="text-base-content/60 mt-4 max-w-2xl mx-auto">Browse the product in action. Click any screenshot to view it full size.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- dashboard -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/dashboard.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">Main Dashboard</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/dashboard.png" alt="Main dashboard screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-white/40">Add <code class="bg-white/10 px-1 py-0.5 rounded">dashboard.png</code> to replace</p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- opd-queue -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/opd-queue.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">OPD &amp; Token Queue</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/opd-queue.png" alt="OPD and token queue screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs">Add <code class="bg-white/10 px-1 py-0.5 rounded">opd-queue.png</code></p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- ipd -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/ipd.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">IPD &amp; Wards</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/ipd.png" alt="IPD and wards screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs">Add <code class="bg-white/10 px-1 py-0.5 rounded">ipd.png</code></p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- billing -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/billing.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">Billing &amp; Insurance</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/billing.png" alt="Billing and insurance screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs">Add <code class="bg-white/10 px-1 py-0.5 rounded">billing.png</code></p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- pharmacy -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/pharmacy.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">Pharmacy &amp; Inventory</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/pharmacy.png" alt="Pharmacy and inventory screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs">Add <code class="bg-white/10 px-1 py-0.5 rounded">pharmacy.png</code></p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <!-- laboratory -->
+            <div x-data="{ loaded: false }"
+                 class="group relative rounded-2xl overflow-hidden border border-base-300/60 bg-[#0B0E18] cursor-pointer shadow-premium hover:shadow-premium-xl transition-shadow"
+                 @click="if(loaded) lightbox = '{{ STATIC_URL }}img/screenshots/laboratory.png'">
+                <div class="flex items-center gap-1.5 px-3 py-2 bg-[#0F1626] border-b border-white/5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400/80"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400/80"></span>
+                    <div class="mx-auto text-[10px] text-white/40 bg-white/5 rounded px-2 py-0.5">Laboratory</div>
+                </div>
+                <div class="relative aspect-[16/10] bg-[#0B0E18]">
+                    <img src="{{ STATIC_URL }}img/screenshots/laboratory.png" alt="Laboratory screenshot" loading="lazy"
+                         class="w-full h-full object-cover object-top" @load="loaded = true"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="absolute inset-0 flex flex-col items-center justify-center text-center text-white/50 gap-2 px-6 bg-[#0B0E18]">
+                        <div class="w-full max-w-[85%] space-y-3">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-400/20 border border-emerald-400/30"></div>
+                                <div class="h-2.5 w-28 rounded bg-white/10"></div>
+                                <div class="ml-auto h-2.5 w-10 rounded bg-white/10"></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                                <div class="h-14 rounded-lg bg-white/5 border border-white/10"></div>
+                            </div>
+                            <div class="h-24 rounded-lg bg-white/5 border border-white/10 flex items-end gap-1.5 p-2">
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:40%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:65%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:50%"></div>
+                                <div class="flex-1 bg-emerald-400/70 rounded-t" style="height:85%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:60%"></div>
+                                <div class="flex-1 bg-indigo-400/60 rounded-t" style="height:75%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs">Add <code class="bg-white/10 px-1 py-0.5 rounded">laboratory.png</code></p>
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <span class="btn btn-sm btn-accent border-0 gap-1.5">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            View
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- What patients receive -->
+<section class="py-20 md:py-28 bg-base-100 reveal">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+            <p class="text-primary font-semibold text-sm uppercase tracking-widest mb-3">Better for your patients too</p>
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tight">What Every Patient Receives</h2>
+            <p class="text-base-content/60 mt-4 max-w-2xl mx-auto">{{ platform_name }} doesn't just help staff — it gives patients a clearer, safer care experience.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Prescription -->
+            <div class="patient-card">
+                <div class="patient-icon">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Digital Prescriptions</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Clear, legible e-prescriptions sent to the patient's phone — no lost papers, fewer dosing errors, easy refills.</p>
+            </div>
+            <!-- Lab reports -->
+            <div class="patient-card">
+                <div class="patient-icon">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2v-4M9 21H5a2 2 0 01-2-2v-4m0 0h18"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Lab Reports Online</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Patients get results the moment they're verified — securely accessible from anywhere, with doctor notes attached.</p>
+            </div>
+            <!-- Appointment reminder -->
+            <div class="patient-card">
+                <div class="patient-icon">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Appointment Reminders</h3>
+                <p class="text-base-content/60 text-sm leading-relaxed">Automated appointment reminders reduce no-shows and keep your OPD running on schedule.</p>
+            </div>
         </div>
     </div>
 </section>
@@ -149,10 +648,86 @@
 <section class="py-20 hero-gradient text-white relative hero-mesh">
     <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
         <h2 class="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Ready to modernize your hospital?</h2>
-        <p class="text-white/70 text-lg mb-8">Join General Practice Hospital, Islamabad and hospitals nationwide. Setup takes less than 5 minutes.</p>
-        <a href="{% url 'tenants:register' %}" class="btn btn-accent btn-lg shadow-lg shadow-emerald-500/30 font-semibold border-0">
-            Register Your Hospital — Free Trial
-        </a>
+        <p class="text-white/70 text-lg mb-8">See {{ platform_name }} in action. Book a personalized demo or start your free trial — setup takes less than 5 minutes.</p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <button type="button" @click="bookOpen = true" class="btn btn-accent btn-lg shadow-lg shadow-emerald-500/30 font-semibold border-0">
+                Book a Demo
+            </button>
+            <a href="{% url 'tenants:register' %}" class="btn btn-lg btn-outline text-white border-white/30 hover:bg-white/10 hover:border-white/50 font-semibold">
+                Start Free Trial
+            </a>
+        </div>
     </div>
 </section>
+
+<!-- ───────── Book a Demo modal ───────── -->
+<div x-show="bookOpen" x-cloak
+     class="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto"
+     x-transition.opacity>
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="bookOpen = false"></div>
+    <div class="relative w-full max-w-lg my-8 bg-base-100 rounded-2xl shadow-premium-xl"
+         @click.stop x-transition.scale.origin.center>
+        <button type="button" @click="bookOpen = false"
+                class="absolute top-3 right-3 z-10 btn btn-sm btn-circle btn-ghost text-base-content/60">✕</button>
+        <div class="p-6 md:p-8">
+            <h3 class="text-2xl font-bold tracking-tight mb-1">Book a Demo</h3>
+            <p class="text-base-content/60 text-sm mb-6">Tell us about your hospital and we'll reach out within one business day.</p>
+
+            {% if demo_form.non_field_errors %}
+            <div class="alert alert-error mb-4 text-sm">{{ demo_form.non_field_errors }}</div>
+            {% endif %}
+
+            <form method="post" action="{% url 'tenants:book_demo' %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="{{ demo_form.name.id_for_label }}">Your name *</label>
+                    {{ demo_form.name }}
+                    {% if demo_form.name.errors %}<p class="text-error text-xs mt-1">{{ demo_form.name.errors|striptags }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="{{ demo_form.hospital_name.id_for_label }}">Hospital / clinic name *</label>
+                    {{ demo_form.hospital_name }}
+                    {% if demo_form.hospital_name.errors %}<p class="text-error text-xs mt-1">{{ demo_form.hospital_name.errors|striptags }}</p>{% endif %}
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="{{ demo_form.email.id_for_label }}">Work email *</label>
+                        {{ demo_form.email }}
+                        {% if demo_form.email.errors %}<p class="text-error text-xs mt-1">{{ demo_form.email.errors|striptags }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" for="{{ demo_form.phone.id_for_label }}">Phone</label>
+                        {{ demo_form.phone }}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="{{ demo_form.team_size.id_for_label }}">Team size</label>
+                    {{ demo_form.team_size }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="{{ demo_form.message.id_for_label }}">Message</label>
+                    {{ demo_form.message }}
+                </div>
+                <button type="submit" class="btn btn-accent w-full border-0 font-semibold">Request Demo</button>
+                <p class="text-xs text-base-content/40 text-center">Prefer to talk now? Call +92 334 4599170.</p>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ───────── Screenshot lightbox ───────── -->
+<div x-show="lightbox" x-cloak
+     class="fixed inset-0 z-[70] flex items-center justify-center p-4"
+     x-transition.opacity>
+    <div class="absolute inset-0 bg-black/85 backdrop-blur-sm" @click="lightbox = null"></div>
+    <div class="relative w-full max-w-5xl bg-base-100 rounded-2xl shadow-premium-xl overflow-hidden"
+         @click.stop x-transition.scale.origin.center>
+        <button type="button" @click="lightbox = null"
+                class="absolute top-3 right-3 z-10 btn btn-sm btn-circle btn-ghost text-base-content/70 bg-base-100/80">✕</button>
+        <img :src="lightbox" alt="Screenshot preview" class="w-full h-auto max-h-[85vh] object-contain bg-[#0B0E18]"
+             @click="lightbox = null">
+    </div>
+</div>
+
+</div>
+
 {% endblock %}

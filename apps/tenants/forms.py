@@ -1,7 +1,7 @@
 from django import forms
 
 from apps.tenants.limits import BASE_MODULES, MODULE_LABELS, SELECTABLE_MODULES
-from apps.tenants.models import SubscriptionPlan
+from apps.tenants.models import SubscriptionPlan, DemoRequest
 
 INPUT = 'input input-bordered w-full'
 SELECT = 'select select-bordered w-full'
@@ -102,3 +102,45 @@ class SubscriptionPlanForm(forms.ModelForm):
             if plan.is_featured:
                 SubscriptionPlan.objects.exclude(pk=plan.pk).update(is_featured=False)
         return plan
+
+
+class DemoRequestForm(forms.ModelForm):
+    """'Book a Demo' lead form shown in the landing-page modal."""
+
+    class Meta:
+        model = DemoRequest
+        fields = ['name', 'hospital_name', 'email', 'phone', 'team_size', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': INPUT, 'placeholder': 'Dr. Jane Doe', 'autocomplete': 'name',
+            }),
+            'hospital_name': forms.TextInput(attrs={
+                'class': INPUT, 'placeholder': 'City General Hospital', 'autocomplete': 'organization',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': INPUT, 'placeholder': 'you@hospital.com', 'autocomplete': 'email',
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': INPUT, 'placeholder': '+92 3XX XXXXXXX', 'autocomplete': 'tel',
+            }),
+            'team_size': forms.Select(attrs={'class': SELECT}, choices=[
+                ('', 'Team size (optional)'),
+                ('1-10', '1–10 staff'),
+                ('11-50', '11–50 staff'),
+                ('51-200', '51–200 staff'),
+                ('200+', '200+ staff'),
+            ]),
+            'message': forms.Textarea(attrs={
+                'class': TEXTAREA, 'rows': 3,
+                'placeholder': 'Anything specific you want to see? (optional)',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = True
+        self.fields['hospital_name'].required = True
+        self.fields['email'].required = True
+        self.fields['phone'].required = False
+        self.fields['team_size'].required = False
+        self.fields['message'].required = False

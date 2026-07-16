@@ -7,6 +7,7 @@ from django.shortcuts import render
 from apps.core.services.dashboard import (
     get_dashboard_stat_cards,
     get_dashboard_kpis,
+    get_executive_kpis,
     get_revenue_chart_data,
     get_appointment_status_chart,
     get_patient_demographics,
@@ -18,6 +19,10 @@ def dashboard(request):
     context = {
         'stat_cards': get_dashboard_stat_cards(request.user),
         'kpis': get_dashboard_kpis(request.user),
+        'executive_kpis': (
+            get_executive_kpis(request.user)
+            if request.user.role != 'patient' else None
+        ),
         'role': request.user.role,
     }
     if request.user.role == 'doctor':

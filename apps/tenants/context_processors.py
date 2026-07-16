@@ -12,6 +12,7 @@ def tenant_context(request):
         'is_public_schema': is_public,
         'platform_name': settings.PLATFORM_NAME,
         'tenant_subfolder_prefix': settings.TENANT_SUBFOLDER_PREFIX,
+        'demo_video_url': getattr(settings, 'DEMO_VIDEO_URL', ''),
     }
 
     if not is_public and tenant:

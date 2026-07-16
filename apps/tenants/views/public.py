@@ -4,9 +4,11 @@ from django.contrib.auth import (
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
+from django.core.mail import send_mail
 from django.views.decorators.http import require_http_methods
 
 from apps.tenants.models import Hospital, PlatformUser, SubscriptionPlan
+from apps.tenants.forms import DemoRequestForm
 from apps.tenants.services import create_hospital_tenant, get_tenant_usage_stats
 from apps.tenants.decorators import platform_admin_required
 from apps.tenants.auth import resolve_tenant_and_authenticate, admin_email_taken
@@ -20,7 +22,57 @@ def _active_plans():
 def landing(request):
     """Public marketing / landing page."""
     plans = _active_plans()
-    return render(request, 'tenants/landing.html', {'plans': plans})
+    return render(request, 'tenants/landing.html', {
+        'plans': plans,
+        'demo_form': DemoRequestForm(),
+    })
+
+
+@require_http_methods(['GET', 'POST'])
+def book_demo(request):
+    """
+    Handle 'Book a Demo' submissions from the landing-page modal.
+    Saves a DemoRequest lead and emails the sales inbox (EMAIL_* creds from .env).
+    """
+    if request.method == 'GET':
+        return redirect('tenants:landing')
+
+    form = DemoRequestForm(request.POST)
+    if form.is_valid():
+        demo = form.save()
+        notify_to = getattr(settings, 'DEMO_NOTIFY_EMAIL', '') or settings.DEFAULT_FROM_EMAIL
+        try:
+            send_mail(
+                subject=f'[{settings.PLATFORM_NAME}] Demo request — {demo.hospital_name}',
+                message=(
+                    f'New demo request from the landing page.\n\n'
+                    f'Name:        {demo.name}\n'
+                    f'Hospital:    {demo.hospital_name}\n'
+                    f'Email:       {demo.email}\n'
+                    f'Phone:       {demo.phone or "—"}\n'
+                    f'Team size:   {demo.team_size or "—"}\n\n'
+                    f'Message:\n{demo.message or "—"}\n'
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[notify_to],
+                fail_silently=True,
+            )
+        except Exception as e:  # never block the lead on mail failure
+            log_auth('demo_mail_error', request, error=str(e))
+        messages.success(
+            request,
+            "Thanks! Your demo request is in — our team will reach out within one business day.",
+        )
+        return redirect('tenants:landing')
+
+    # Invalid: re-render landing with the bound form so errors show in the modal.
+    messages.error(request, 'Please check the highlighted fields and try again.')
+    plans = _active_plans()
+    return render(request, 'tenants/landing.html', {
+        'plans': plans,
+        'demo_form': form,
+        'demo_form_open': True,
+    })
 
 
 def hospital_register(request):

@@ -147,6 +147,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
                 'apps.tenants.context_processors.tenant_context',
                 'apps.core.context_processors.hospital_context',
                 'apps.core.context_processors.navigation_context',
@@ -270,13 +271,17 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@care-u.com')
 
+# Marketing / landing page
+DEMO_NOTIFY_EMAIL = env('DEMO_NOTIFY_EMAIL', default='')  # where 'Book a Demo' leads are sent
+DEMO_VIDEO_URL = env('DEMO_VIDEO_URL', default='')        # embed URL for the 'Watch Demo' modal
+
 # Twilio
 TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID', default='')
 TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN', default='')
 TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER', default='')
 
 # SaaS platform settings
-PLATFORM_NAME = env('PLATFORM_NAME', default='CARE-U')
+PLATFORM_NAME = env('PLATFORM_NAME', default='CareOS')
 BASE_DOMAIN = env('BASE_DOMAIN', default='localhost')
 TRIAL_DAYS = env.int('TRIAL_DAYS', default=14)
 

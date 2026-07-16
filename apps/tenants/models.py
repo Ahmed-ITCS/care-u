@@ -236,3 +236,36 @@ class TenantUserIndex(models.Model):
 
     def __str__(self):
         return f'{self.username} @ {self.hospital.subdomain}'
+
+
+class DemoRequest(models.Model):
+    """
+    PUBLIC SCHEMA: 'Book a Demo' leads captured from the marketing landing page.
+    """
+    STATUS_NEW = 'new'
+    STATUS_CONTACTED = 'contacted'
+    STATUS_SCHEDULED = 'scheduled'
+    STATUS_CLOSED = 'closed'
+    STATUS_CHOICES = [
+        (STATUS_NEW, 'New'),
+        (STATUS_CONTACTED, 'Contacted'),
+        (STATUS_SCHEDULED, 'Scheduled'),
+        (STATUS_CLOSED, 'Closed'),
+    ]
+
+    name = models.CharField(max_length=200)
+    hospital_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=32, blank=True)
+    team_size = models.CharField(max_length=32, blank=True)
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_NEW, db_index=True)
+    source = models.CharField(max_length=64, default='landing')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Demo Request'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.hospital_name} — {self.name}'

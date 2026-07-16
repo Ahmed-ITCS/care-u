@@ -33,22 +33,22 @@ module.exports = {
         'premium': '0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05), 0 12px 32px rgba(0,0,0,0.04)',
         'premium-lg': '0 4px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.08), 0 24px 64px rgba(0,0,0,0.06)',
         'premium-xl': '0 8px 12px rgba(0,0,0,0.05), 0 24px 64px rgba(0,0,0,0.12), 0 48px 96px rgba(0,0,0,0.08)',
-        'glow': '0 0 40px -10px rgba(99,102,241,0.5)',
-        'glow-sm': '0 0 20px -5px rgba(99,102,241,0.35)',
+        'glow': '0 0 40px -10px rgba(13,148,136,0.5)',
+        'glow-sm': '0 0 20px -5px rgba(13,148,136,0.35)',
         'inner-soft': 'inset 0 1px 0 rgba(255,255,255,0.08)',
         'inner-highlight': 'inset 0 1px 0 rgba(255,255,255,0.12)',
-        'btn-primary': '0 4px 14px rgba(79,70,229,0.35), 0 1px 3px rgba(79,70,229,0.2)',
-        'btn-primary-hover': '0 6px 20px rgba(79,70,229,0.45), 0 2px 6px rgba(79,70,229,0.25)',
+        'btn-primary': '0 4px 14px rgba(14,90,167,0.35), 0 1px 3px rgba(14,90,167,0.2)',
+        'btn-primary-hover': '0 6px 20px rgba(14,90,167,0.45), 0 2px 6px rgba(14,90,167,0.25)',
         'card-hover': '0 4px 6px rgba(0,0,0,0.04), 0 16px 48px rgba(0,0,0,0.1)',
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #4F46E5 0%, #6366F1 100%)',
-        'gradient-primary-hover': 'linear-gradient(135deg, #4338CA 0%, #4F46E5 100%)',
-        'gradient-sidebar': 'linear-gradient(180deg, #06080E 0%, #090D18 40%, #0C1221 100%)',
-        'gradient-hero': 'linear-gradient(135deg, #06080E 0%, #1E1B4B 50%, #0C4A6E 100%)',
-        'mesh': 'radial-gradient(at 40% 20%, rgba(99,102,241,0.18) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(6,182,212,0.12) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(79,70,229,0.1) 0px, transparent 50%)',
-        'mesh-dark': 'radial-gradient(at 40% 20%, rgba(99,102,241,0.28) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(6,182,212,0.18) 0px, transparent 50%)',
-        'mesh-subtle': 'radial-gradient(at 70% 30%, rgba(99,102,241,0.06) 0px, transparent 60%), radial-gradient(at 20% 80%, rgba(6,182,212,0.04) 0px, transparent 60%)',
+        'gradient-primary': 'linear-gradient(135deg, #0E5AA7 0%, #0D9488 100%)',
+        'gradient-primary-hover': 'linear-gradient(135deg, #0A4A85 0%, #0B7C72 100%)',
+        'gradient-sidebar': 'linear-gradient(180deg, #04101C 0%, #071A2E 40%, #0A2E3F 100%)',
+        'gradient-hero': 'linear-gradient(135deg, #03101E 0%, #0A3A66 50%, #0C5A6E 100%)',
+        'mesh': 'radial-gradient(at 40% 20%, rgba(14,90,167,0.18) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(13,148,136,0.14) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(14,116,144,0.1) 0px, transparent 50%)',
+        'mesh-dark': 'radial-gradient(at 40% 20%, rgba(14,90,167,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(13,148,136,0.2) 0px, transparent 50%)',
+        'mesh-subtle': 'radial-gradient(at 70% 30%, rgba(14,90,167,0.06) 0px, transparent 60%), radial-gradient(at 20% 80%, rgba(13,148,136,0.04) 0px, transparent 60%)',
       },
       animation: {
         'fade-in': 'fadeIn 0.35s ease-out',
@@ -86,10 +86,10 @@ module.exports = {
       },
       colors: {
         gph: {
-          50: '#EEFAFF',
-          primary: '#4F46E5',
-          dark: '#06080E',
-          accent: '#059669',
+          50: '#EAF5FB',
+          primary: '#0E5AA7',
+          dark: '#04101C',
+          accent: '#0D9488',
         },
       },
       letterSpacing: {
@@ -108,28 +108,28 @@ module.exports = {
     themes: [
       {
         gph: {
-          /* --- Core palette --- */
-          primary: '#4F46E5',
+          /* --- Core palette (deep blue + teal) --- */
+          primary: '#0E5AA7',
           'primary-content': '#FFFFFF',
-          secondary: '#0891B2',
+          secondary: '#0E7490',
           'secondary-content': '#FFFFFF',
-          accent: '#059669',
+          accent: '#0D9488',
           'accent-content': '#FFFFFF',
 
           /* --- Neutral (sidebar) --- */
-          neutral: '#06080E',
-          'neutral-content': '#EEF0FF',
+          neutral: '#071A2E',
+          'neutral-content': '#DCE9F5',
 
           /* --- Base surfaces --- */
           'base-100': '#FFFFFF',
-          'base-200': '#F4F5FB',
-          'base-300': '#E5E6F0',
-          'base-content': '#0F1117',
+          'base-200': '#F2F7FB',
+          'base-300': '#E2ECF3',
+          'base-content': '#0A1B2B',
 
           /* --- Semantic --- */
           info: '#0EA5E9',
           'info-content': '#FFFFFF',
-          success: '#059669',
+          success: '#0D9488',
           'success-content': '#FFFFFF',
           warning: '#D97706',
           'warning-content': '#FFFFFF',
@@ -137,33 +137,33 @@ module.exports = {
           'error-content': '#FFFFFF',
         },
         'gph-dark': {
-          /* --- Core palette --- */
-          primary: '#818CF8',
-          'primary-content': '#0F0E1A',
+          /* --- Core palette (deep blue + teal) --- */
+          primary: '#49A6E0',
+          'primary-content': '#04101C',
           secondary: '#22D3EE',
-          'secondary-content': '#06080E',
-          accent: '#34D399',
-          'accent-content': '#06080E',
+          'secondary-content': '#04101C',
+          accent: '#2DD4BF',
+          'accent-content': '#04101C',
 
           /* --- Neutral (sidebar) --- */
-          neutral: '#06080E',
-          'neutral-content': '#EEF0FF',
+          neutral: '#05111F',
+          'neutral-content': '#DCE9F5',
 
           /* --- Base surfaces --- */
-          'base-100': '#0B0E18',
-          'base-200': '#0F1626',
-          'base-300': '#1A2338',
-          'base-content': '#E8EAF6',
+          'base-100': '#0A1622',
+          'base-200': '#0F1E2E',
+          'base-300': '#1A2E42',
+          'base-content': '#E6F0F7',
 
           /* --- Semantic --- */
           info: '#38BDF8',
-          'info-content': '#06080E',
-          success: '#34D399',
-          'success-content': '#06080E',
+          'info-content': '#04101C',
+          success: '#2DD4BF',
+          'success-content': '#04101C',
           warning: '#FCD34D',
-          'warning-content': '#06080E',
+          'warning-content': '#04101C',
           error: '#FB7185',
-          'error-content': '#06080E',
+          'error-content': '#04101C',
         },
       },
     ],
